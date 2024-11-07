@@ -2,7 +2,6 @@ package client.ui.gamemode;
 
 import client.ui.RoomListUI;
 import client.ui.icon.ArrowIcon;
-import client.ui.gamemode.thread.ChatThread;
 import protocol.Message;
 
 import javax.swing.*;
@@ -68,14 +67,9 @@ public class CooperationUI {
 
         frame.setVisible(true);
 
-        // ChatThread 생성 및 시작
-        ChatThread chatThread = new ChatThread(in, chatArea, roomId);
-        chatThread.start();
-
         // 뒤로가기 버튼 동작
         backButton.addActionListener(e -> {
             frame.dispose();
-            chatThread.stopThread();
             new RoomListUI(socket, out, in, "Cooperation Mode", userId);
         });
 

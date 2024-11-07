@@ -155,6 +155,7 @@ public class RoomListUI {
     }
 
     private void fetchRoomListFromServer() {
+
         try {
             Message request = new Message("fetchRoomList")
                     .setUserId(userId)
@@ -169,5 +170,6 @@ public class RoomListUI {
             e.printStackTrace();
             roomMap.put(-1, "Failed to load rooms123");
         }
+
     }
 }

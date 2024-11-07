@@ -82,7 +82,7 @@ public class LoginUI {
                     JOptionPane.showMessageDialog(null, "로그인 성공");
                     frame.dispose();
                     String loginUserId = loginMessage.getUserId();
-                    new GameModeUI(socket, out, in, loginUserId);
+                    new MenuUI(socket, out, in, loginUserId);
                 } else {
                     JOptionPane.showMessageDialog(null, "로그인 실패: " + loginMessage.getData());
                 }
