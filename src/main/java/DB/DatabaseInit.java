@@ -33,6 +33,8 @@ public class DatabaseInit {
                 "game_category VARCHAR(400) NOT NULL," +
                 "master_id VARCHAR(15) NOT NULL," +
                 "name VARCHAR(500)," +
+                "capacity INTEGER NOT NULL," +        // 인원 제한 열
+                "current_count INTEGER DEFAULT 0," +  // 현재 인원 수 열
                 "FOREIGN KEY(master_id) REFERENCES User(id)" +
                 ");";
 
