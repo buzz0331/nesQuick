@@ -14,32 +14,37 @@ public class DatabaseInit {
 
     public static void createTables() {
         String userTable = "CREATE TABLE IF NOT EXISTS User (" +
-                "id TEXT PRIMARY KEY," +       // 사용자 직접 입력
-                "password TEXT NOT NULL," +
+                "id VARCHAR(15) PRIMARY KEY," +
+                "password VARCHAR(15) NOT NULL," +
                 "win_count INTEGER DEFAULT 0," +
-                "name TEXT NOT NULL" +
+                "name VARCHAR(30) NOT NULL" +
                 ");";
 
         String quizSetTable = "CREATE TABLE IF NOT EXISTS QuizSet (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "game_category_id INTEGER NOT NULL," +
-                "user_id TEXT NOT NULL," +
+                "user_id VARCHAR(15)," +
                 "recommended_count INTEGER DEFAULT 0," +
+                "game_category VARCHAR(20) NOT NULL," +
                 "FOREIGN KEY(user_id) REFERENCES User(id)" +
                 ");";
 
-        String gameCategoryTable = "CREATE TABLE IF NOT EXISTS GameCategory (" +
+        String roomTable = "CREATE TABLE IF NOT EXISTS Room (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                "name TEXT NOT NULL" +
+                "game_category VARCHAR(400) NOT NULL," +
+                "master_id VARCHAR(15) NOT NULL," +
+                "name VARCHAR(500)," +
+                "capacity INTEGER NOT NULL," +        // 인원 제한 열
+                "current_count INTEGER DEFAULT 0," +  // 현재 인원 수 열
+                "FOREIGN KEY(master_id) REFERENCES User(id)" +
                 ");";
 
         String quizTable = "CREATE TABLE IF NOT EXISTS Quiz (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "quiz_set_id INTEGER NOT NULL," +
                 "solved_time INTEGER," +
-                "quiz TEXT NOT NULL," +
-                "answer TEXT NOT NULL," +
-                "image_url TEXT," +
+                "quiz VARCHAR(500) NOT NULL," +
+                "answer VARCHAR(100) NOT NULL," +
+                "image_url VARCHAR(1024)," +
                 "FOREIGN KEY(quiz_set_id) REFERENCES QuizSet(id)" +
                 ");";
 
@@ -47,7 +52,7 @@ public class DatabaseInit {
              Statement stmt = conn.createStatement()) {
             stmt.execute(userTable);
             stmt.execute(quizSetTable);
-            stmt.execute(gameCategoryTable);
+            stmt.execute(roomTable);
             stmt.execute(quizTable);
             System.out.println("Tables created successfully.");
         } catch (SQLException e) {
