@@ -78,6 +78,9 @@ public class SpeedQuizUI {
             if (!message.isEmpty()) {
                 sendMessage(message);
                 messageField.setText("");
+
+                //전송한 메시지를 chatArea에 표시
+                chatArea.append(userId + ": " + message + "\n");
             }
         });
 
