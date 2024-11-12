@@ -33,12 +33,12 @@ public class GameModeUI {
         logoLabel.setBounds(125, 30, 250, 100);
         panel.add(logoLabel);
 
-        JLabel modeLabel = new JLabel("게임 모드를 선택하세요");
+        JLabel modeLabel = new JLabel("Choose Game Mode");
         modeLabel.setBounds(175, 150, 200, 30);
         modeLabel.setFont(new Font("Arial", Font.BOLD, 16));
         panel.add(modeLabel);
 
-        JButton speedQuizButton = new JButton("스피드 퀴즈 모드");
+        JButton speedQuizButton = new JButton("Speed Quiz Mode");
         speedQuizButton.setBounds(150, 190, 200, 40);
         speedQuizButton.setBackground(new Color(255, 223, 85));
         speedQuizButton.setForeground(Color.BLACK);
@@ -46,7 +46,7 @@ public class GameModeUI {
         speedQuizButton.setFont(new Font("Arial", Font.BOLD, 15));
         panel.add(speedQuizButton);
 
-        JButton cooperationModeButton = new JButton("협동 모드");
+        JButton cooperationModeButton = new JButton("Cooperation Mode");
         cooperationModeButton.setBounds(150, 240, 200, 40);
         cooperationModeButton.setBackground(new Color(255, 223, 85));
         cooperationModeButton.setForeground(Color.BLACK);
@@ -54,7 +54,7 @@ public class GameModeUI {
         cooperationModeButton.setFont(new Font("Arial", Font.BOLD, 15));
         panel.add(cooperationModeButton);
 
-        JButton versusModeButton = new JButton("대전 모드");
+        JButton versusModeButton = new JButton("Battle Mode");
         versusModeButton.setBounds(150, 290, 200, 40);
         versusModeButton.setBackground(new Color(255, 223, 85));
         versusModeButton.setForeground(Color.BLACK);

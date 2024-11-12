@@ -28,7 +28,7 @@ public class InitialUI {
         panel.add(logoLabel);
 
         // 로그인 버튼
-        JButton loginButton = new JButton("로그인");
+        JButton loginButton = new JButton("Log in");
         loginButton.setBounds(150, 150, 200, 50);
         loginButton.setBackground(new Color(255, 223, 85));  // 버튼 색상 설정
         loginButton.setForeground(Color.BLACK);
@@ -37,7 +37,7 @@ public class InitialUI {
         panel.add(loginButton);
 
         // 회원가입 버튼
-        JButton registerButton = new JButton("회원가입");
+        JButton registerButton = new JButton("Sign Up");
         registerButton.setBounds(150, 220, 200, 50);
         registerButton.setBackground(new Color(255, 223, 85));  // 버튼 색상 설정
         registerButton.setForeground(Color.BLACK);

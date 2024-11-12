@@ -55,7 +55,7 @@ public class RoomListUI {
         panel.add(logoLabel);
 
         // 방 리스트 라벨
-        JLabel titleLabel = new JLabel("방 리스트 - " + gameMode);
+        JLabel titleLabel = new JLabel("Room List - " + gameMode);
         titleLabel.setBounds(200, 50, 200, 30);
         titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
         panel.add(titleLabel);

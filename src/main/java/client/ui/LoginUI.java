@@ -50,7 +50,7 @@ public class LoginUI {
         passwordText.setBounds(230, 190, 150, 25);
         panel.add(passwordText);
 
-        JButton loginButton = new JButton("로그인");
+        JButton loginButton = new JButton("Log In");
         loginButton.setBounds(150, 240, 200, 50);
         loginButton.setBackground(new Color(255, 223, 85));
         loginButton.setForeground(Color.BLACK);
