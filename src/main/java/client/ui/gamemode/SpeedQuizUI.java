@@ -17,11 +17,13 @@ public class SpeedQuizUI {
     private final ObjectOutputStream out;
     private final int roomId;
     private final String userId;
+    private Boolean isMaster;
 
     public SpeedQuizUI(Socket socket, ObjectOutputStream out, ObjectInputStream in, int roomId, String userId) {
         this.out = out;
         this.roomId = roomId;
         this.userId = userId;
+//        this.isMaster = userId.equals(masterId);
 
         JFrame frame = new JFrame("Speed Quiz");
         frame.setSize(800, 600);
@@ -62,6 +64,25 @@ public class SpeedQuizUI {
         sendButton.setBounds(660, 470, 80, 30);
         panel.add(sendButton);
 
+        //방장일 경우에 시작 버튼 보이도록
+//        if(isMaster) {
+//            JButton startButton = new JButton("Start");
+//            startButton.setBounds(350, 530, 100, 30);  // 위치와 크기 설정
+//            startButton.setBackground(new Color(255, 223, 85));
+//            startButton.setForeground(Color.BLACK);
+//            startButton.setFocusPainted(false);
+//
+//            panel.add(startButton);
+//        }
+            //일단 방장 없이
+        JButton startButton = new JButton("Start");
+        startButton.setBounds(350, 530, 100, 30);  // 위치와 크기 설정
+        startButton.setBackground(new Color(255, 223, 85));
+        startButton.setForeground(Color.BLACK);
+        startButton.setFocusPainted(false);
+
+        panel.add(startButton);
+
         frame.setVisible(true);
 
 
@@ -100,4 +121,5 @@ public class SpeedQuizUI {
             e.printStackTrace();
         }
     }
+
 }
