@@ -16,7 +16,7 @@ public class QuizClient {
             out = new ObjectOutputStream(socket.getOutputStream());
             in = new ObjectInputStream(socket.getInputStream());
 
-            // ì´ˆê¸° í™”ë©´ì„ ë³´ì—¬ì¤Œ
+            // ÃÊ±â È­¸éÀ» º¸¿©ÁÜ
             new InitialUI(socket, out, in);
         } catch (IOException e) {
             e.printStackTrace();
