@@ -1,6 +1,5 @@
 package client.ui.gamemode;
 
-import client.ui.MenuUI;
 import client.ui.RoomListUI;
 import client.ui.icon.ArrowIcon;
 import protocol.Message;
@@ -21,7 +20,7 @@ public class VersusUI {
     private final ObjectInputStream in;
     private final int roomId;
     private final String userId;
-    private List<quiz> list;
+    private List<Quiz> list;
 
     public VersusUI(Socket socket, ObjectOutputStream out, ObjectInputStream in, int roomId, String userId) {
         this.socket = socket;
@@ -41,7 +40,7 @@ public class VersusUI {
 
         // 로고
         JLabel logoLabel = new JLabel(new ImageIcon("./src/main/java/client/ui/nesquick_logo.png"));
-        logoLabel.setBounds(500, 10, 200, 80);
+        logoLabel.setBounds(530, 10, 250, 100);
         panel.add(logoLabel);
 
         // 뒤로가기 버튼
@@ -112,8 +111,8 @@ public class VersusUI {
         }
     }
 
-    private List<quiz> fetchVersusQuizListFromServer() {
-        List<quiz> quizList = new ArrayList<>();
+    private List<Quiz> fetchVersusQuizListFromServer() {
+        List<Quiz> quizList = new ArrayList<>();
         try {
             Message request = new Message("fetchVersusQuizList")
                     .setUserId(userId)
@@ -126,7 +125,7 @@ public class VersusUI {
             String quizArr[] = data.split("\n");
             for(int i=0;i< quizArr.length;i++){
                 String tmp[] = quizArr[i].split("\t");
-                quizList.add(new quiz(Integer.parseInt(tmp[0]),Integer.parseInt(tmp[1]),tmp[2],tmp[3]));
+                quizList.add(new Quiz(Integer.parseInt(tmp[0]),Integer.parseInt(tmp[1]),tmp[2],tmp[3]));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -142,10 +141,10 @@ class VersusStartUI {
     private final ObjectInputStream in;
     private final int roomId;
     private final String userId;
-    private List<quiz> quizList;
+    private List<Quiz> quizList;
     private int score=0;
 
-    public VersusStartUI(Socket socket, ObjectOutputStream out, ObjectInputStream in, int roomId, String userId, List<quiz> quizList) {
+    public VersusStartUI(Socket socket, ObjectOutputStream out, ObjectInputStream in, int roomId, String userId, List<Quiz> quizList) {
         this.socket = socket;
         this.out = out;
         this.in = in;
@@ -164,7 +163,7 @@ class VersusStartUI {
 
         // 로고
         JLabel logoLabel = new JLabel(new ImageIcon("./src/main/java/client/ui/nesquick_logo.png"));
-        logoLabel.setBounds(500, 10, 200, 80);
+        logoLabel.setBounds(530, 10, 250, 100);
         panel.add(logoLabel);
 
         // 뒤로가기 버튼
@@ -195,18 +194,18 @@ class VersusStartUI {
     private void displayQuiz(JPanel panel, JFrame frame, JLabel logoLabel, JButton backButton, int[] currentIndex) {
         panel.removeAll();
 
-        quiz currentQuiz = quizList.get(currentIndex[0]);
+        Quiz currentQuiz = quizList.get(currentIndex[0]);
         String question = currentQuiz.getQuestion();
         String answer = currentQuiz.getAnswer();
 
         JLabel qLabel = new JLabel((currentIndex[0] + 1) + ". " + question);
-        qLabel.setBounds(175, 150, 500, 50);
-        qLabel.setFont(new Font("Arial", Font.BOLD, 30));
+        qLabel.setBounds(175, 170, 500, 50);
+        qLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 30));
         panel.add(qLabel);
 
         JLabel ansLabel = new JLabel("정답: ");
-        ansLabel.setBounds(80, 320, 80, 30);
-        ansLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        ansLabel.setBounds(60, 320, 80, 30);
+        ansLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 15));
         panel.add(ansLabel);
 
         JTextField ansField = new JTextField();
@@ -215,6 +214,7 @@ class VersusStartUI {
 
         JButton sendButton = new JButton("확인");
         sendButton.setBounds(660, 320, 80, 30);
+        sendButton.setFont(new Font("Malgun Gothic", Font.PLAIN, 15));
         panel.add(sendButton);
 
         panel.add(logoLabel);
@@ -236,22 +236,107 @@ class VersusStartUI {
                 if (currentIndex[0] < quizList.size()) {
                     displayQuiz(panel, frame, logoLabel, backButton, currentIndex); // 다음 문제 호출
                 } else {
-                    JOptionPane.showMessageDialog(frame, "퀴즈가 종료되었습니다! 최종 점수: " + score);
+                    JOptionPane.showMessageDialog(frame, "퀴즈가 종료되었습니다!\n최종 점수: " + score);
+                    List<String> list = fetchVersusRankingFromServer();
                     frame.dispose();
-                    new RoomListUI(socket, out, in, "Versus Mode", userId);
+                    new VersusRankingUI(socket, out, in, roomId, userId, list);
                 }
             }
         });
     }
+
+    private List<String> fetchVersusRankingFromServer() {
+        List<String> ranking = new ArrayList<>();
+        try {
+            Message request = new Message("fetchVersusRanking")
+                    .setUserId(userId)
+                    .setRoomId(roomId)
+                    .setData(score+"");
+            out.writeObject(request);
+            out.flush();
+
+            Message response = (Message) in.readObject();
+            String data = response.getData();
+            String tmp[] = data.split("\n");
+            for(int i=0;i< tmp.length;i++){
+                ranking.add(tmp[i]);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return ranking;
+    }
 }
 
-class quiz{
+class VersusRankingUI {
+    private final Socket socket;
+    private final ObjectOutputStream out;
+    private final ObjectInputStream in;
+    private final int roomId;
+    private final String userId;
+    private List<String> ranking;
+
+    public VersusRankingUI(Socket socket, ObjectOutputStream out, ObjectInputStream in, int roomId, String userId, List<String> ranking) {
+        this.socket = socket;
+        this.out = out;
+        this.in = in;
+        this.roomId = roomId;
+        this.userId = userId;
+        this.ranking = ranking;
+
+        JFrame frame = new JFrame("VersusRanking");
+        frame.setSize(800, 600);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        JPanel panel = new JPanel();
+        panel.setLayout(null);
+        panel.setBackground(new Color(255, 247, 153));
+        frame.add(panel);
+
+        // 로고
+        JLabel logoLabel = new JLabel(new ImageIcon("./src/main/java/client/ui/nesquick_logo.png"));
+        logoLabel.setBounds(530, 10, 250, 100);
+        panel.add(logoLabel);
+
+        // 뒤로가기 버튼
+        JButton backButton = new JButton(new ArrowIcon(20, Color.BLACK));
+        backButton.setBounds(10, 10, 30, 30);
+        backButton.setBorderPainted(false);
+        backButton.setContentAreaFilled(false);
+        backButton.setFocusPainted(false);
+        panel.add(backButton);
+
+        // 랭킹
+        JLabel headLabel = new JLabel("순위     이름     점수");
+        headLabel.setBounds(150, 150, 200, 30);
+        headLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 20));
+        panel.add(headLabel);
+
+        JLabel items[] = new JLabel[ranking.size()];
+        for(int i=0;i<ranking.size();i++){
+            String tmp[] = ranking.get(i).split("\t");
+            items[i] = new JLabel("  "+tmp[0]+"     "+tmp[1]+"     "+tmp[2]);
+            items[i].setBounds(150, 200+i*50, 200, 30);
+            items[i].setFont(new Font("Malgun Gothic", Font.PLAIN, 20));
+            panel.add(items[i]);
+        }
+        frame.setVisible(true);
+
+        // 뒤로가기 버튼 동작
+        backButton.addActionListener(e -> {
+            frame.dispose();
+            new RoomListUI(socket, out, in, "Versus Mode", this.userId);
+        });
+
+    }
+}
+class Quiz{
     private int num;
     private int second;
     private String question;
     private String answer;
 
-    public quiz(int num, int second, String question, String answer) {
+    public Quiz(int num, int second, String question, String answer) {
         this.num = num;
         this.second = second;
         this.question = question;
