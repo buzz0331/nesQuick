@@ -56,11 +56,34 @@ public class VersusUI {
         startButton.setBounds(10,50,150,30);
         panel.add(startButton);
 
+
+
+        // 퀴즈 set 리스트 라벨
+        JLabel titleLabel = new JLabel("Quiz set 리스트");
+        titleLabel.setBounds(200, 50, 200, 30);
+        titleLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 18));
+        panel.add(titleLabel);
+
+        // 서버로부터 퀴즈 set들 가져오기
+        List<String> quizSets = fetchVersusQuizSetsFromServer();
+
+        // 퀴즈 set 리스트 표시
+        DefaultListModel<String> listModel = new DefaultListModel<>();
+        for (String s : quizSets) {
+            listModel.addElement(s);
+        }
+        JList<String> quizSetList = new JList<>(listModel);
+        quizSetList.setBounds(50, 100, 500, 200);
+        quizSetList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        panel.add(quizSetList);
+
+
+
         // 채팅 영역
         JTextArea chatArea = new JTextArea();
         chatArea.setEditable(false);
         JScrollPane chatScroll = new JScrollPane(chatArea);
-        chatScroll.setBounds(50, 100, 700, 350);
+        chatScroll.setBounds(50, 310, 700, 140);
         panel.add(chatScroll);
 
         // 메시지 입력 필드
@@ -83,7 +106,7 @@ public class VersusUI {
 
         // 게임 시작 버튼 동작
         startButton.addActionListener(e -> {
-            list = fetchVersusQuizListFromServer();
+            list = fetchVersusQuizListFromServer(quizSetList.getSelectedValue());
             frame.dispose();
             new VersusStartUI(socket, out, in, roomId, userId, list);
         });
@@ -111,12 +134,35 @@ public class VersusUI {
         }
     }
 
-    private List<Quiz> fetchVersusQuizListFromServer() {
+    private List<String> fetchVersusQuizSetsFromServer() {
+        List<String> quizSetList = new ArrayList<>();
+        try {
+            Message request = new Message("fetchVersusQuizSets")
+                    .setUserId(userId)
+                    .setRoomId(roomId);
+            out.writeObject(request);
+            out.flush();
+
+            Message response = (Message) in.readObject();
+            String data = response.getData();
+            String quizArr[] = data.split("\n");
+            for(int i=0;i< quizArr.length;i++){
+                quizSetList.add(quizArr[i]);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return quizSetList;
+    }
+
+    private List<Quiz> fetchVersusQuizListFromServer(String selectedValue) {
         List<Quiz> quizList = new ArrayList<>();
         try {
             Message request = new Message("fetchVersusQuizList")
                     .setUserId(userId)
-                    .setRoomId(roomId);
+                    .setRoomId(roomId)
+                    .setData(selectedValue);
             out.writeObject(request);
             out.flush();
 
@@ -342,7 +388,6 @@ class Quiz{
         this.question = question;
         this.answer = answer;
     }
-
     public int getNum() {
         return num;
     }
