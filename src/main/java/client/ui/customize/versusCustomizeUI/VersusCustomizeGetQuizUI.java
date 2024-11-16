@@ -27,7 +27,7 @@ public class VersusCustomizeGetQuizUI {
         this.num = num;
         this.sendData = sendData;
 
-        JFrame frame = new JFrame("Versus Customize GetQz");
+        JFrame frame = new JFrame("Versus Customize");
         frame.setSize(800, 600);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 

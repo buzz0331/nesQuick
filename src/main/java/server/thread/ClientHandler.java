@@ -1,7 +1,10 @@
 package server.thread;
 
 import protocol.Message;
-import server.QuizServer;
+import server.thread.versusThread.FetchVersusQuizListThread;
+import server.thread.versusThread.FetchVersusQuizSetsThread;
+import server.thread.versusThread.FetchVersusRankingThread;
+import server.thread.versusThread.SendVersusCustomQuizThread;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
