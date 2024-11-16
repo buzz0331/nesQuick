@@ -302,6 +302,7 @@ class VersusStartUI {
             out.flush();
 
             Message response = (Message) in.readObject();
+
             String data = response.getData();
             String tmp[] = data.split("\n");
             for(int i=0;i< tmp.length;i++){
