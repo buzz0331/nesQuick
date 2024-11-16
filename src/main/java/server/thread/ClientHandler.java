@@ -45,6 +45,8 @@ public class ClientHandler implements Runnable {
                     new FetchVersusQuizListThread(message,out).start();
                 } else if("fetchVersusRanking".equals(message.getType())){
                     new FetchVersusRankingThread(message,out).start();
+                } else if("sendVersusCustomQuiz".equals(message.getType())){
+                    new SendVersusCustomQuizThread(message,out).start();
                 }
             }
         } catch (IOException | ClassNotFoundException e) {
