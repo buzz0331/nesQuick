@@ -1,7 +1,7 @@
 package client.ui;
 
 import client.ui.gamemode.CooperationUI;
-import client.ui.gamemode.SpeedQuizUI;
+import client.ui.gamemode.speedQuiz.SpeedQuizUI;
 import client.ui.gamemode.VersusUI;
 import client.ui.icon.ArrowIcon;
 import protocol.Message;

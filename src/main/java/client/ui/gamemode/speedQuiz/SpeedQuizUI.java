@@ -1,26 +1,26 @@
-package client.ui.gamemode;
+package client.ui.gamemode.speedQuiz;
 
-import client.ui.GameModeUI;
 import client.ui.RoomListUI;
 import client.ui.icon.ArrowIcon;
 import protocol.Message;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 public class SpeedQuizUI {
     private final ObjectOutputStream out;
+    private final ObjectInputStream in;
     private final int roomId;
     private final String userId;
     private Boolean isMaster;
+    private final JTextArea chatArea;
 
     public SpeedQuizUI(Socket socket, ObjectOutputStream out, ObjectInputStream in, int roomId, String userId ,String masterId) {
         this.out = out;
+        this.in = in;
         this.roomId = roomId;
         this.userId = userId;
         this.isMaster = userId.equals(masterId);
@@ -48,7 +48,7 @@ public class SpeedQuizUI {
         panel.add(backButton);
 
         // 채팅 영역
-        JTextArea chatArea = new JTextArea();
+        chatArea = new JTextArea();
         chatArea.setEditable(false);
         JScrollPane chatScroll = new JScrollPane(chatArea);
         chatScroll.setBounds(50, 100, 700, 350);
@@ -73,6 +73,11 @@ public class SpeedQuizUI {
             startButton.setFocusPainted(false);
 
             panel.add(startButton);
+
+            startButton.addActionListener(e -> {
+                frame.dispose();
+                new StartSpeedQuiz();
+            });
         }
             //일단 방장 없이
 //        JButton startButton = new JButton("Start");
@@ -105,7 +110,7 @@ public class SpeedQuizUI {
             }
         });
 
-
+        new Thread(this::listenForMessages).start();
     }
 
     private void sendMessage(String messageContent) {
@@ -117,6 +122,19 @@ public class SpeedQuizUI {
             System.out.println("채팅 송신");
             out.writeObject(message);
             out.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void listenForMessages() {
+        try {
+            while (true) {
+                Message message = (Message) in.readObject();
+                if(message.getType().equals("chat") && message.getRoomId()==roomId) {
+                    chatArea.append(message.getUserId() + ": " + message.getData() + "\n");
+                }
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
