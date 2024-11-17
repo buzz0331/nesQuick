@@ -13,7 +13,7 @@ import java.util.Map;
 public class QuizServer {
     private static final int PORT = 12345;
 //    private static final String DB_URL = "jdbc:sqlite:quiz_game.db";
-private static final Map<Integer, Map<String, Socket>> rooms = new HashMap<Integer, Map<String, Socket>>();
+    private static final Map<Integer, Map<String, Socket>> rooms = new HashMap<Integer, Map<String, Socket>>();
 
     public static synchronized void addClientToRoom(int roomId, String userId, Socket clientSocket) {
         rooms.computeIfAbsent(roomId, k -> new HashMap<>()).put(userId, clientSocket);
@@ -22,9 +22,13 @@ private static final Map<Integer, Map<String, Socket>> rooms = new HashMap<Integ
     public static synchronized void removeClientFromRoom(int roomId, String userId) {
         Map<String, Socket> room = rooms.get(roomId);
         if (room != null) {
-            room.remove(userId);
-            if (room.isEmpty()) {
-                rooms.remove(roomId);
+            Socket clientSocket = room.remove(userId);  // userId로 소켓을 찾고 제거
+            if (clientSocket != null) {
+                try {
+                    clientSocket.close();  // 소켓 연결을 종료
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
