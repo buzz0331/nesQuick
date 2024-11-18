@@ -1,7 +1,10 @@
 package server.thread;
 
 import protocol.Message;
-import server.QuizServer;
+import server.thread.versusThread.FetchVersusQuizListThread;
+import server.thread.versusThread.FetchVersusQuizSetsThread;
+import server.thread.versusThread.FetchVersusRankingThread;
+import server.thread.versusThread.SendVersusCustomQuizThread;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -36,6 +39,8 @@ public class ClientHandler implements Runnable {
                     new CreateRoomThread(message, out).start();
                 } else if ("enterRoom".equals(message.getType())) {
                     new EnterRoomThread(message, out, socket).start(); // 방 입장 로직을 별도의 스레드에서 처리
+                } else if("outRoom".equals(message.getType())){
+                    new OutRoomThread(message,out,socket).start();
                 } else if ("chat".equals(message.getType())) {
                     System.out.println("채팅 수신");
                     new ChattingThread(message).start();
@@ -45,6 +50,8 @@ public class ClientHandler implements Runnable {
                     new FetchVersusQuizListThread(message,out).start();
                 } else if("fetchVersusRanking".equals(message.getType())){
                     new FetchVersusRankingThread(message,out).start();
+                } else if("sendVersusCustomQuiz".equals(message.getType())){
+                    new SendVersusCustomQuizThread(message,out).start();
                 }
             }
         } catch (IOException | ClassNotFoundException e) {

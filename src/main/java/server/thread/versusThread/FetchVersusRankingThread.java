@@ -1,4 +1,4 @@
-package server.thread;
+package server.thread.versusThread;
 
 import protocol.Message;
 import server.QuizServer;
