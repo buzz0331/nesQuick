@@ -39,6 +39,8 @@ public class ClientHandler implements Runnable {
                     new CreateRoomThread(message, out).start();
                 } else if ("enterRoom".equals(message.getType())) {
                     new EnterRoomThread(message, out, socket).start(); // 방 입장 로직을 별도의 스레드에서 처리
+                } else if("outRoom".equals(message.getType())){
+                    new OutRoomThread(message,out,socket).start();
                 } else if ("chat".equals(message.getType())) {
                     System.out.println("채팅 수신");
                     new ChattingThread(message).start();

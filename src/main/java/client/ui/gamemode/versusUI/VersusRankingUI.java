@@ -2,6 +2,7 @@ package client.ui.gamemode.versusUI;
 
 import client.ui.RoomListUI;
 import client.ui.icon.ArrowIcon;
+import protocol.Message;
 
 import javax.swing.*;
 import java.awt.*;
@@ -66,9 +67,24 @@ public class VersusRankingUI {
 
         // 뒤로가기 버튼 동작
         backButton.addActionListener(e -> {
+            outRoom(roomId);
             frame.dispose();
             new RoomListUI(socket, out, in, "Versus Mode", this.userId);
         });
 
+    }
+
+    private void outRoom(int roomId) {
+        try {
+            Message outRequest = new Message("outRoom")
+                    .setUserId(userId)
+                    .setData(String.valueOf(roomId));
+            out.writeObject(outRequest);
+
+            Message response = (Message) in.readObject();
+            System.out.println(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

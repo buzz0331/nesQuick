@@ -81,13 +81,23 @@ public class VersusCustomizeGetQuizUI {
 
         // 정답
         JLabel aLabel = new JLabel("정답을 입력하세요");
-        aLabel.setBounds(100, 300, 250, 30);
+        aLabel.setBounds(100, 270, 250, 30);
         aLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 15));
         panel.add(aLabel);
 
         JTextField aField = new JTextField();
-        aField.setBounds(300, 300, 300, 30);
+        aField.setBounds(300, 270, 300, 30);
         panel.add(aField);
+
+        // 시간 제한
+        JLabel timeLabel = new JLabel("제한 시간을 입력하세요(초)");
+        timeLabel.setBounds(100, 340, 250, 30);
+        timeLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 15));
+        panel.add(timeLabel);
+
+        JTextField timeField = new JTextField();
+        timeField.setBounds(300, 340, 300, 30);
+        panel.add(timeField);
 
         // 확인 버튼
         JButton checkButton = new JButton("확인");
@@ -104,6 +114,7 @@ public class VersusCustomizeGetQuizUI {
             public void actionPerformed(ActionEvent e) {
                 sendData += qField.getText()+"\n";
                 sendData += aField.getText()+"\n";
+                sendData += timeField.getText()+"\n";
 
                 currentIndex[0]++;
                 if (currentIndex[0] < num) {
