@@ -39,6 +39,12 @@ public class ClientHandler implements Runnable {
                 } else if ("chat".equals(message.getType())) {
                     System.out.println("채팅 수신");
                     new ChattingThread(message).start();
+                } else if ("fetchVersusQuizSets".equals(message.getType())){
+                    new FetchVersusQuizSetsThread(message,out).start();
+                } else if ("fetchVersusQuizList".equals(message.getType())){
+                    new FetchVersusQuizListThread(message,out).start();
+                } else if("fetchVersusRanking".equals(message.getType())){
+                    new FetchVersusRankingThread(message,out).start();
                 }
             }
         } catch (IOException | ClassNotFoundException e) {

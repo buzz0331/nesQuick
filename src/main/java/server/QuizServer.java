@@ -14,6 +14,8 @@ public class QuizServer {
     private static final int PORT = 12345;
 //    private static final String DB_URL = "jdbc:sqlite:quiz_game.db";
 private static final Map<Integer, Map<String, Socket>> rooms = new HashMap<Integer, Map<String, Socket>>();
+    // 랭킹 처리를 위해 추가한 Map입니다
+    private static final Map<Integer, Map<String, Integer>> roomScores = new HashMap<>(); // 방 별 사용자 점수 저장
 
     public static synchronized void addClientToRoom(int roomId, String userId, Socket clientSocket) {
         rooms.computeIfAbsent(roomId, k -> new HashMap<>()).put(userId, clientSocket);
@@ -65,6 +67,23 @@ private static final Map<Integer, Map<String, Socket>> rooms = new HashMap<Integ
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    // 대전 모드에서 랭킹 처리를 위해 작성한 메소드들입니다.
+    public static synchronized void addScore(int roomId, String userId, int score) {
+        roomScores.computeIfAbsent(roomId, k -> new HashMap<>()).put(userId, score);
+    }
+
+    public static synchronized boolean allScoresReceived(int roomId) {
+        return roomScores.get(roomId).size() == rooms.get(roomId).size();
+    }
+
+    public static synchronized Map<String, Integer> getScores(int roomId) {
+        return new HashMap<>(roomScores.getOrDefault(roomId, new HashMap<>()));
+    }
+
+    public static synchronized void clearRoomScores(int roomId) {
+        roomScores.remove(roomId);
     }
 
 }
