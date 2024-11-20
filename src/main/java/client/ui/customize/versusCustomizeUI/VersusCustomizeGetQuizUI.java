@@ -114,9 +114,9 @@ public class VersusCustomizeGetQuizUI {
 
         checkButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                sendData += qField.getText()+"\n";
+                sendData += timeField.getText()+"\t";
+                sendData += qField.getText()+"\t";
                 sendData += aField.getText()+"\n";
-                sendData += timeField.getText()+"\n";
 
                 currentIndex[0]++;
                 if (currentIndex[0] < num) {

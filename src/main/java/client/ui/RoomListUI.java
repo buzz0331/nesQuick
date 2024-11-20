@@ -127,7 +127,7 @@ public class RoomListUI {
                         break;
                     case "Versus Mode":
                         frame.dispose();
-                        new VersusUI(socket, out, roomId, userId, masterId, receiver);
+                        new VersusUI(socket, out, roomId, userId, masterId, receiver, gameMode);
                         break;
                     case "Cooperation Mode":
                         frame.dispose();
