@@ -1,5 +1,6 @@
 package client.ui.customize.versusCustomizeUI;
 
+import client.thread.MessageReceiver;
 import client.ui.MenuUI;
 import client.ui.icon.ArrowIcon;
 import protocol.Message;
@@ -15,17 +16,18 @@ import java.net.Socket;
 public class VersusCustomizeGetQuizUI {
     private final Socket socket;
     private final ObjectOutputStream out;
-    private final ObjectInputStream in;
     private final String userId;
     private int num;
     private String sendData;
-    public VersusCustomizeGetQuizUI(Socket socket, ObjectOutputStream out, ObjectInputStream in, String userId, int num, String sendData) {
+    MessageReceiver receiver;
+
+    public VersusCustomizeGetQuizUI(Socket socket, ObjectOutputStream out, String userId, int num, String sendData, MessageReceiver receiver) {
         this.socket = socket;
         this.out = out;
-        this.in = in;
         this.userId = userId;
         this.num = num;
         this.sendData = sendData;
+        this.receiver = receiver;
 
         JFrame frame = new JFrame("Versus Customize");
         frame.setSize(800, 600);
@@ -60,7 +62,7 @@ public class VersusCustomizeGetQuizUI {
         // 뒤로가기 버튼 동작
         backButton.addActionListener(e -> {
             frame.dispose();
-            new VersusCustomizeUI(socket, out, in, userId);
+            new VersusCustomizeUI(socket, out, userId, receiver);
         });
 
     }
@@ -123,7 +125,7 @@ public class VersusCustomizeGetQuizUI {
                     sendVersusCustomQuizToServer(sendData);
                     JOptionPane.showMessageDialog(frame, "퀴즈 생성이 완료되었습니다.");
                     frame.dispose();
-                    new MenuUI(socket, out, in, userId);  // MenuUI로 돌아감
+                    new MenuUI(socket, out, userId, receiver);  // MenuUI로 돌아감
                 }
             }
         });
@@ -137,7 +139,7 @@ public class VersusCustomizeGetQuizUI {
             out.writeObject(request);
             out.flush();
 
-            Message response = (Message) in.readObject();
+            Message response = receiver.takeMessage();
             System.out.println("퀴즈 생성 완료 응답 받음");
             String data = response.getData();
 

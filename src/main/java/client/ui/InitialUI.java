@@ -1,5 +1,6 @@
 package client.ui;
 
+import client.thread.MessageReceiver;
 import client.ui.LoginUI;
 import client.ui.RegisterUI;
 
@@ -12,7 +13,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 public class InitialUI {
-    public InitialUI(Socket socket, ObjectOutputStream out, ObjectInputStream in) {
+    public InitialUI(Socket socket, ObjectOutputStream out, MessageReceiver receiver) {
         JFrame frame = new JFrame("Quiz Game");
         frame.setSize(500, 400);  // 창 크기 조절
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -50,14 +51,14 @@ public class InitialUI {
         loginButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                new LoginUI(socket, out, in);
+                new LoginUI(socket, out, receiver);
             }
         });
 
         registerButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                new RegisterUI(socket, out, in);
+                new RegisterUI(socket, out, receiver);
             }
         });
     }

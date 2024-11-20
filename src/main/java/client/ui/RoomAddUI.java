@@ -1,5 +1,6 @@
 package client.ui;
 
+import client.thread.MessageReceiver;
 import client.ui.icon.ArrowIcon;
 import protocol.Message;
 
@@ -12,14 +13,12 @@ import java.net.Socket;
 public class RoomAddUI {
     private Socket socket;
     private ObjectOutputStream out;
-    private ObjectInputStream in;
     private String gameMode;
     private String userId;
 
-    public RoomAddUI(Socket socket, ObjectOutputStream out, ObjectInputStream in, String gameMode, String userId) {
+    public RoomAddUI(Socket socket, ObjectOutputStream out, String gameMode, String userId, MessageReceiver receiver) {
         this.socket = socket;
         this.out = out;
-        this.in = in;
         this.gameMode = gameMode;
         this.userId = userId;
 
@@ -82,7 +81,7 @@ public class RoomAddUI {
         // 뒤로가기 버튼 동작
         backButton.addActionListener(e -> {
             frame.dispose();
-            new RoomListUI(socket, out, in, gameMode, userId); // RoomListUI로 돌아감
+            new RoomListUI(socket, out, gameMode, userId, receiver); // RoomListUI로 돌아감
         });
 
         // 방 생성 버튼 동작
@@ -99,11 +98,11 @@ public class RoomAddUI {
                         .setCapacity(capacity);  // 인원 제한 전송
                 out.writeObject(createRoomMessage);
 
-                Message response = (Message) in.readObject();
+                Message response = receiver.takeMessage();
                 if ("createRoomSuccess".equals(response.getType())) {
                     JOptionPane.showMessageDialog(null, "방 생성 성공!");
                     frame.dispose();
-                    new RoomListUI(socket, out, in, gameMode, userId);
+                    new RoomListUI(socket, out, gameMode, userId, receiver);
                 } else {
                     JOptionPane.showMessageDialog(null, "방 생성 실패: " + response.getData());
                 }

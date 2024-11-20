@@ -57,6 +57,7 @@ public class Message implements Serializable {
     public int getRoomId() {
         return roomId;
     }
+
     public String getRoomMaster() {return roomMaster;}
 
     public Message setRoomId(int roomId) {
@@ -103,6 +104,7 @@ public class Message implements Serializable {
         this.roomNames = roomNames;
         return this;
     }
+
     public Message setRoomMaster(String roomMaster) {
         this.roomMaster = roomMaster;
         return this;
