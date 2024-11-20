@@ -1,5 +1,6 @@
 package client.ui;
 
+import client.thread.MessageReceiver;
 import client.ui.icon.ArrowIcon;
 import protocol.Message;
 import javax.swing.*;
@@ -11,7 +12,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 public class LoginUI {
-    public LoginUI(Socket socket, ObjectOutputStream out, ObjectInputStream in) {
+    public LoginUI(Socket socket, ObjectOutputStream out, MessageReceiver receiver) {
         JFrame frame = new JFrame("Login");
         frame.setSize(500, 400);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -64,7 +65,7 @@ public class LoginUI {
         backButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                new InitialUI(socket, out, in);  // InitialUI로 돌아감
+                new InitialUI(socket, out, receiver);  // InitialUI로 돌아감
             }
         });
 
@@ -76,13 +77,13 @@ public class LoginUI {
                 Message loginMessage = new Message("login")
                         .setUserId(id)
                         .setPassword(password);
-                sendMessage(loginMessage, out, in);
+                sendMessage(loginMessage, out, receiver);
 
                 if ("Login successful".equals(loginMessage.getData())) {
                     JOptionPane.showMessageDialog(null, "로그인 성공");
                     frame.dispose();
                     String loginUserId = loginMessage.getUserId();
-                    new MenuUI(socket, out, in, loginUserId);
+                    new MenuUI(socket, out, loginUserId, receiver);
                 } else {
                     JOptionPane.showMessageDialog(null, "로그인 실패: " + loginMessage.getData());
                 }
@@ -90,10 +91,10 @@ public class LoginUI {
         });
     }
 
-    private void sendMessage(Message message, ObjectOutputStream out, ObjectInputStream in) {
+    private void sendMessage(Message message, ObjectOutputStream out, MessageReceiver receiver) {
         try {
             out.writeObject(message);
-            Message response = (Message) in.readObject();
+            Message response = receiver.takeMessage();
             message.setData(response.getData());
         } catch (Exception e) {
             e.printStackTrace();

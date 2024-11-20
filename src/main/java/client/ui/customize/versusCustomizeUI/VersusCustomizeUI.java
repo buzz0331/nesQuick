@@ -1,5 +1,6 @@
 package client.ui.customize.versusCustomizeUI;
 
+import client.thread.MessageReceiver;
 import client.ui.GameCustomizeUI;
 import client.ui.icon.ArrowIcon;
 
@@ -12,15 +13,15 @@ import java.net.Socket;
 public class VersusCustomizeUI {
     private final Socket socket;
     private final ObjectOutputStream out;
-    private final ObjectInputStream in;
     private final String userId;
     private String sendData;
+    private MessageReceiver receiver;
 
-    public VersusCustomizeUI(Socket socket, ObjectOutputStream out, ObjectInputStream in, String userId) {
+    public VersusCustomizeUI(Socket socket, ObjectOutputStream out, String userId, MessageReceiver receiver) {
         this.socket = socket;
         this.out = out;
-        this.in = in;
         this.userId = userId;
+        this.receiver = receiver;
 
         JFrame frame = new JFrame("Versus Customize");
         frame.setSize(800, 600);
@@ -79,7 +80,7 @@ public class VersusCustomizeUI {
         // 뒤로가기 버튼 동작
         backButton.addActionListener(e -> {
             frame.dispose();
-            new GameCustomizeUI(socket, out, in, userId);
+            new GameCustomizeUI(socket, out, userId, receiver);
         });
 
         // 확인 버튼 동작
@@ -88,7 +89,7 @@ public class VersusCustomizeUI {
             String selectedValue = (String) comboBox.getSelectedItem();
             sendData = title+"\n"+selectedValue+"\n";
             frame.dispose();
-            new VersusCustomizeGetQuizUI(socket, out, in, userId, Integer.parseInt(selectedValue),sendData);
+            new VersusCustomizeGetQuizUI(socket, out, userId, Integer.parseInt(selectedValue),sendData, receiver);
         });
 
     }

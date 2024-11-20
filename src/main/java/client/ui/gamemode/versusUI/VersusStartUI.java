@@ -1,5 +1,6 @@
 package client.ui.gamemode.versusUI;
 
+import client.thread.MessageReceiver;
 import client.ui.RoomListUI;
 import client.ui.icon.ArrowIcon;
 import protocol.Message;
@@ -17,19 +18,19 @@ import java.util.List;
 public class VersusStartUI {
     private final Socket socket;
     private final ObjectOutputStream out;
-    private final ObjectInputStream in;
     private final int roomId;
     private final String userId;
     private List<Quiz> quizList;
     private int score=0;
+    private MessageReceiver receiver;
 
-    public VersusStartUI(Socket socket, ObjectOutputStream out, ObjectInputStream in, int roomId, String userId, List<Quiz> quizList) {
+    public VersusStartUI(Socket socket, ObjectOutputStream out, int roomId, String userId, List<Quiz> quizList, MessageReceiver receiver) {
         this.socket = socket;
         this.out = out;
-        this.in = in;
         this.roomId = roomId;
         this.userId = userId;
         this.quizList = quizList;
+        this.receiver = receiver;
 
         JFrame frame = new JFrame("Versus Start");
         frame.setSize(800, 600);
@@ -64,7 +65,7 @@ public class VersusStartUI {
         // 뒤로가기 버튼 동작
         backButton.addActionListener(e -> {
             frame.dispose();
-            new RoomListUI(socket, out, in, "Versus Mode", userId);
+            new RoomListUI(socket, out, "Versus Mode", userId, receiver);
         });
 
     }
@@ -118,7 +119,7 @@ public class VersusStartUI {
                     JOptionPane.showMessageDialog(frame, "퀴즈가 종료되었습니다!\n최종 점수: " + score);
                     List<String> list = fetchVersusRankingFromServer();
                     frame.dispose();
-                    new VersusRankingUI(socket, out, in, roomId, userId, list);
+                    new VersusRankingUI(socket, out, roomId, userId, list, receiver);
                 }
             }
         });
@@ -134,7 +135,7 @@ public class VersusStartUI {
             out.writeObject(request);
             out.flush();
 
-            Message response = (Message) in.readObject();
+            Message response = receiver.takeMessage();
 
             String data = response.getData();
             String tmp[] = data.split("\n");

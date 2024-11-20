@@ -1,5 +1,6 @@
 package client.ui.gamemode;
 
+import client.thread.MessageReceiver;
 import client.ui.RoomListUI;
 import client.ui.icon.ArrowIcon;
 import protocol.Message;
@@ -15,14 +16,12 @@ import java.net.Socket;
 public class CooperationUI {
     private final Socket socket;
     private final ObjectOutputStream out;
-    private final ObjectInputStream in;
     private final int roomId;
     private final String userId;
 
-    public CooperationUI(Socket socket, ObjectOutputStream out, ObjectInputStream in, int roomId, String userId) {
+    public CooperationUI(Socket socket, ObjectOutputStream out, int roomId, String userId, MessageReceiver receiver) {
         this.socket = socket;
         this.out = out;
-        this.in = in;
         this.roomId = roomId;
         this.userId = userId;
 
@@ -70,7 +69,7 @@ public class CooperationUI {
         // 뒤로가기 버튼 동작
         backButton.addActionListener(e -> {
             frame.dispose();
-            new RoomListUI(socket, out, in, "Cooperation Mode", userId);
+            new RoomListUI(socket, out, "Cooperation Mode", userId, receiver);
         });
 
         // 메시지 전송 동작
