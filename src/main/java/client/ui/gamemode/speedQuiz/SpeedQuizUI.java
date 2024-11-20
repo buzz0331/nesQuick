@@ -6,11 +6,13 @@ import protocol.Message;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 public class SpeedQuizUI {
+    private final Socket socket;
     private final ObjectOutputStream out;
     private final ObjectInputStream in;
     private final int roomId;
@@ -19,6 +21,7 @@ public class SpeedQuizUI {
     private final JTextArea chatArea;
 
     public SpeedQuizUI(Socket socket, ObjectOutputStream out, ObjectInputStream in, int roomId, String userId ,String masterId) {
+        this.socket = socket;
         this.out = out;
         this.in = in;
         this.roomId = roomId;
@@ -28,6 +31,12 @@ public class SpeedQuizUI {
         JFrame frame = new JFrame("Speed Quiz");
         frame.setSize(800, 600);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.addWindowListener(new java.awt.event.WindowAdapter() {
+            @Override
+            public void windowClosing(java.awt.event.WindowEvent windowEvent) {
+                closeResources(); // 창이 닫힐 때 리소스 정리
+            }
+        });
 
         JPanel panel = new JPanel();
         panel.setLayout(null);
@@ -76,7 +85,7 @@ public class SpeedQuizUI {
 
             startButton.addActionListener(e -> {
                 frame.dispose();
-                new StartSpeedQuiz();
+                sendStartMessage();
             });
         }
             //일단 방장 없이
@@ -113,6 +122,19 @@ public class SpeedQuizUI {
         new Thread(this::listenForMessages).start();
     }
 
+    private void  sendStartMessage() {
+        try {
+            Message startMessage = new Message("start")
+                    .setRoomId(roomId)
+                    .setUserId(userId);
+            out.reset();
+            out.writeObject(startMessage);
+            out.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     private void sendMessage(String messageContent) {
         try {
             Message message = new Message("chat")
@@ -120,6 +142,7 @@ public class SpeedQuizUI {
                     .setData(messageContent)
                     .setRoomId(roomId);
             System.out.println("채팅 송신");
+            out.reset();
             out.writeObject(message);
             out.flush();
         } catch (Exception e) {
@@ -133,11 +156,26 @@ public class SpeedQuizUI {
                 Message message = (Message) in.readObject();
                 if(message.getType().equals("chat") && message.getRoomId()==roomId) {
                     chatArea.append(message.getUserId() + ": " + message.getData() + "\n");
+                } else if(message.getType().equals("startGameSuccess") && message.getRoomId()==roomId) {
+                    System.out.println( message.getData() + "\n");
+                    message.getData();
+                    new StartSpeedQuiz();
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
+        } finally {
+            closeResources(); // 예외 발생 시 리소스 정리
         }
     }
 
+    private void closeResources() {
+        try {
+            if (out != null) out.close();
+            if (in != null) in.close();
+            if (socket != null && !socket.isClosed()) socket.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 }

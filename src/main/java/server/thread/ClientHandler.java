@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.List;
 
 public class ClientHandler implements Runnable {
     private final Socket socket;
@@ -39,6 +40,11 @@ public class ClientHandler implements Runnable {
                 } else if ("chat".equals(message.getType())) {
                     System.out.println("채팅 수신");
                     new ChattingThread(message).start();
+                } else if ("start".equals(message.getType())) {
+                    int roomId = message.getRoomId();
+                    List<String> userIds =  QuizServer.getUserIdsInRoom(roomId);
+                    System.out.println(userIds);
+                    new GameStartThread(message, out, userIds).start();
                 }
             }
         } catch (IOException | ClassNotFoundException e) {
