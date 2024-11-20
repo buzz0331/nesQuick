@@ -1,6 +1,7 @@
 package server.thread.versusThread;
 
 import protocol.Message;
+import server.QuizServer;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;

@@ -120,6 +120,7 @@ public class RoomListUI {
 
             Message response = (Message) in.readObject();
             if ("enterRoomSuccess".equals(response.getType())) {
+                String masterId = response.getRoomMaster();
                 switch (gameMode) {
                     case "Speed Quiz Mode":
                         frame.dispose();
@@ -127,7 +128,7 @@ public class RoomListUI {
                         break;
                     case "Versus Mode":
                         frame.dispose();
-                        new VersusUI(socket, out, in, roomId, userId);
+                        new VersusUI(socket, out, in, roomId, userId, masterId);
                         break;
                     case "Cooperation Mode":
                         frame.dispose();

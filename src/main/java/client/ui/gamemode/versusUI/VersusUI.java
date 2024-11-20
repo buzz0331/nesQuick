@@ -8,6 +8,7 @@ import protocol.Message;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
@@ -20,14 +21,16 @@ public class VersusUI {
     private final ObjectInputStream in;
     private final int roomId;
     private final String userId;
+    private final String masterId;
     private List<Quiz> list;
 
-    public VersusUI(Socket socket, ObjectOutputStream out, ObjectInputStream in, int roomId, String userId) {
+    public VersusUI(Socket socket, ObjectOutputStream out, ObjectInputStream in, int roomId, String userId, String masterId) throws IOException, ClassNotFoundException {
         this.socket = socket;
         this.out = out;
         this.in = in;
         this.roomId = roomId;
         this.userId = userId;
+        this.masterId = masterId;
 
         JFrame frame = new JFrame("Versus");
         frame.setSize(800, 600);
@@ -51,31 +54,37 @@ public class VersusUI {
         backButton.setFocusPainted(false);
         panel.add(backButton);
 
-        // 게임 시작 버튼
-        JButton startButton = new JButton("Game Start");
-        startButton.setBounds(10,50,150,30);
-        panel.add(startButton);
 
+            // 게임 시작 버튼
+            JButton startButton = new JButton("Game Start");
+            startButton.setBounds(10,50,150,30);
+            panel.add(startButton);
 
+            // 퀴즈 set 리스트 라벨
+            JLabel titleLabel = new JLabel("Quiz set 리스트");
+            titleLabel.setBounds(200, 50, 200, 30);
+            titleLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 18));
+            panel.add(titleLabel);
 
-        // 퀴즈 set 리스트 라벨
-        JLabel titleLabel = new JLabel("Quiz set 리스트");
-        titleLabel.setBounds(200, 50, 200, 30);
-        titleLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 18));
-        panel.add(titleLabel);
+            // 서버로부터 퀴즈 set들 가져오기
+            List<String> quizSets = fetchVersusQuizSetsFromServer();
 
-        // 서버로부터 퀴즈 set들 가져오기
-        List<String> quizSets = fetchVersusQuizSetsFromServer();
+            // 퀴즈 set 리스트 표시
+            DefaultListModel<String> listModel = new DefaultListModel<>();
+            for (String s : quizSets) {
+                listModel.addElement(s);
+            }
+            JList<String> quizSetList = new JList<>(listModel);
+            quizSetList.setBounds(50, 100, 500, 200);
+            quizSetList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+            panel.add(quizSetList);
 
-        // 퀴즈 set 리스트 표시
-        DefaultListModel<String> listModel = new DefaultListModel<>();
-        for (String s : quizSets) {
-            listModel.addElement(s);
-        }
-        JList<String> quizSetList = new JList<>(listModel);
-        quizSetList.setBounds(50, 100, 500, 200);
-        quizSetList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        panel.add(quizSetList);
+            // 게임 시작 버튼 동작
+            startButton.addActionListener(e -> {
+                list = fetchVersusQuizListFromServer(quizSetList.getSelectedValue());
+                frame.dispose();
+                new VersusStartUI(socket, out, in, roomId, userId, list);
+            });
 
 
 
@@ -97,19 +106,33 @@ public class VersusUI {
         panel.add(sendButton);
 
         frame.setVisible(true);
+/*
+        // 방장이 아닐 경우 게임 시작 대기
+        if(!userId.equals(masterId)){
+            Message response = null;
+            try {
+                response = (Message) in.readObject();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+            String data = response.getData();
+            String quizArr[] = data.split("\n");
+            for(int i=0;i< quizArr.length;i++){
+                String tmp[] = quizArr[i].split("\t");
+                list.add(new Quiz(Integer.parseInt(tmp[0]),Integer.parseInt(tmp[1]),tmp[2],tmp[3]));
+            }
 
+            frame.dispose();
+            new VersusStartUI(socket, out, in, roomId, userId, list);
+        }
+*/
         // 뒤로가기 버튼 동작
         backButton.addActionListener(e -> {
             outRoom(roomId);
             frame.dispose();
             new RoomListUI(socket, out, in, "Versus Mode", userId);
-        });
-
-        // 게임 시작 버튼 동작
-        startButton.addActionListener(e -> {
-            list = fetchVersusQuizListFromServer(quizSetList.getSelectedValue());
-            frame.dispose();
-            new VersusStartUI(socket, out, in, roomId, userId, list);
         });
 
         // 메시지 전송 동작
