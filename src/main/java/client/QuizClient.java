@@ -1,5 +1,6 @@
 package client;
 
+import client.thread.MessageReceiver;
 import client.ui.InitialUI;
 
 import java.io.*;
@@ -16,8 +17,11 @@ public class QuizClient {
             out = new ObjectOutputStream(socket.getOutputStream());
             in = new ObjectInputStream(socket.getInputStream());
 
+
+            MessageReceiver receiver = new MessageReceiver(in);
+            receiver.start();
             // 초기 화면을 보여줌
-            new InitialUI(socket, out, in);
+            new InitialUI(socket, out, receiver);
         } catch (IOException e) {
             e.printStackTrace();
         }

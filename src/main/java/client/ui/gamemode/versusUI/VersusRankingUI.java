@@ -1,5 +1,6 @@
 package client.ui.gamemode.versusUI;
 
+import client.thread.MessageReceiver;
 import client.ui.RoomListUI;
 import client.ui.icon.ArrowIcon;
 import protocol.Message;
@@ -14,18 +15,18 @@ import java.util.List;
 public class VersusRankingUI {
     private final Socket socket;
     private final ObjectOutputStream out;
-    private final ObjectInputStream in;
     private final int roomId;
     private final String userId;
     private List<String> ranking;
+    private MessageReceiver receiver;
 
-    public VersusRankingUI(Socket socket, ObjectOutputStream out, ObjectInputStream in, int roomId, String userId, List<String> ranking) {
+    public VersusRankingUI(Socket socket, ObjectOutputStream out, int roomId, String userId, List<String> ranking, MessageReceiver receiver) {
         this.socket = socket;
         this.out = out;
-        this.in = in;
         this.roomId = roomId;
         this.userId = userId;
         this.ranking = ranking;
+        this.receiver = receiver;
 
         JFrame frame = new JFrame("VersusRanking");
         frame.setSize(800, 600);
@@ -69,7 +70,7 @@ public class VersusRankingUI {
         backButton.addActionListener(e -> {
             outRoom(roomId);
             frame.dispose();
-            new RoomListUI(socket, out, in, "Versus Mode", this.userId);
+            new RoomListUI(socket, out, "Versus Mode", this.userId, receiver);
         });
 
     }
@@ -81,7 +82,7 @@ public class VersusRankingUI {
                     .setData(String.valueOf(roomId));
             out.writeObject(outRequest);
 
-            Message response = (Message) in.readObject();
+            Message response = receiver.takeMessage();
             System.out.println(response);
         } catch (Exception e) {
             e.printStackTrace();

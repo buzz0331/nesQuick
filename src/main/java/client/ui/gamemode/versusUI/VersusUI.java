@@ -1,8 +1,7 @@
 package client.ui.gamemode.versusUI;
 
+import client.thread.MessageReceiver;
 import client.ui.RoomListUI;
-import client.ui.gamemode.CooperationUI;
-import client.ui.gamemode.SpeedQuizUI;
 import client.ui.icon.ArrowIcon;
 import protocol.Message;
 
@@ -17,17 +16,17 @@ import java.util.List;
 public class VersusUI {
     private final Socket socket;
     private final ObjectOutputStream out;
-    private final ObjectInputStream in;
     private final int roomId;
     private final String userId;
     private List<Quiz> list;
+    private MessageReceiver receiver;
 
-    public VersusUI(Socket socket, ObjectOutputStream out, ObjectInputStream in, int roomId, String userId) {
+    public VersusUI(Socket socket, ObjectOutputStream out, int roomId, String userId, MessageReceiver receiver) {
         this.socket = socket;
         this.out = out;
-        this.in = in;
         this.roomId = roomId;
         this.userId = userId;
+        this.receiver = receiver;
 
         JFrame frame = new JFrame("Versus");
         frame.setSize(800, 600);
@@ -102,14 +101,14 @@ public class VersusUI {
         backButton.addActionListener(e -> {
             outRoom(roomId);
             frame.dispose();
-            new RoomListUI(socket, out, in, "Versus Mode", userId);
+            new RoomListUI(socket, out, "Versus Mode", userId, receiver);
         });
 
         // 게임 시작 버튼 동작
         startButton.addActionListener(e -> {
             list = fetchVersusQuizListFromServer(quizSetList.getSelectedValue());
             frame.dispose();
-            new VersusStartUI(socket, out, in, roomId, userId, list);
+            new VersusStartUI(socket, out, roomId, userId, list, receiver);
         });
 
         // 메시지 전송 동작
@@ -144,7 +143,7 @@ public class VersusUI {
             out.writeObject(request);
             out.flush();
 
-            Message response = (Message) in.readObject();
+            Message response = receiver.takeMessage();
             String data = response.getData();
             String quizArr[] = data.split("\n");
             for(int i=0;i< quizArr.length;i++){
@@ -167,7 +166,7 @@ public class VersusUI {
             out.writeObject(request);
             out.flush();
 
-            Message response = (Message) in.readObject();
+            Message response = receiver.takeMessage();
             String data = response.getData();
             String quizArr[] = data.split("\n");
             for(int i=0;i< quizArr.length;i++){
@@ -188,7 +187,7 @@ public class VersusUI {
                     .setData(String.valueOf(roomId));
             out.writeObject(outRequest);
 
-            Message response = (Message) in.readObject();
+            Message response = receiver.takeMessage();
             System.out.println(response);
         } catch (Exception e) {
             e.printStackTrace();

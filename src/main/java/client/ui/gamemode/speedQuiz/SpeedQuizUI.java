@@ -1,14 +1,12 @@
-package client.ui.gamemode;
+package client.ui.gamemode.speedQuiz;
 
-import client.ui.GameModeUI;
+import client.thread.MessageReceiver;
 import client.ui.RoomListUI;
 import client.ui.icon.ArrowIcon;
 import protocol.Message;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
@@ -17,11 +15,18 @@ public class SpeedQuizUI {
     private final ObjectOutputStream out;
     private final int roomId;
     private final String userId;
+    private Boolean isMaster;
+    private final JTextArea chatArea;
+    private MessageReceiver receiver;
+    private Thread messageThread; // 메시지 처리 스레드
+    private volatile boolean running = true;
 
-    public SpeedQuizUI(Socket socket, ObjectOutputStream out, ObjectInputStream in, int roomId, String userId) {
+    public SpeedQuizUI(Socket socket, ObjectOutputStream out, int roomId, String userId , String masterId, MessageReceiver receiver) {
         this.out = out;
         this.roomId = roomId;
         this.userId = userId;
+        this.isMaster = userId.equals(masterId);
+        this.receiver = receiver;
 
         JFrame frame = new JFrame("Speed Quiz");
         frame.setSize(800, 600);
@@ -46,7 +51,7 @@ public class SpeedQuizUI {
         panel.add(backButton);
 
         // 채팅 영역
-        JTextArea chatArea = new JTextArea();
+        chatArea = new JTextArea();
         chatArea.setEditable(false);
         JScrollPane chatScroll = new JScrollPane(chatArea);
         chatScroll.setBounds(50, 100, 700, 350);
@@ -62,14 +67,39 @@ public class SpeedQuizUI {
         sendButton.setBounds(660, 470, 80, 30);
         panel.add(sendButton);
 
+        //방장일 경우에 시작 버튼 보이도록
+        if(isMaster) {
+            JButton startButton = new JButton("Start");
+            startButton.setBounds(350, 530, 100, 30);  // 위치와 크기 설정
+            startButton.setBackground(new Color(255, 223, 85));
+            startButton.setForeground(Color.BLACK);
+            startButton.setFocusPainted(false);
+
+            panel.add(startButton);
+
+            startButton.addActionListener(e -> {
+                frame.dispose();
+                new StartSpeedQuiz();
+            });
+        }
+            //일단 방장 없이
+//        JButton startButton = new JButton("Start");
+//        startButton.setBounds(350, 530, 100, 30);  // 위치와 크기 설정
+//        startButton.setBackground(new Color(255, 223, 85));
+//        startButton.setForeground(Color.BLACK);
+//        startButton.setFocusPainted(false);
+//
+//        panel.add(startButton);
+
         frame.setVisible(true);
 
 
 
         // 뒤로가기 버튼 동작
         backButton.addActionListener(e -> {
+            stopThread();
             frame.dispose();
-            new RoomListUI(socket, out, in,"Speed Quiz Mode", userId);
+            new RoomListUI(socket, out, "Speed Quiz Mode", userId, receiver);
         });
 
         // 메시지 전송 동작
@@ -78,10 +108,14 @@ public class SpeedQuizUI {
             if (!message.isEmpty()) {
                 sendMessage(message);
                 messageField.setText("");
+
+                //전송한 메시지를 chatArea에 표시
+                chatArea.append(userId + ": " + message + "\n");
             }
         });
 
-
+        messageThread = new Thread(this::listenForMessages);
+        messageThread.start();
     }
 
     private void sendMessage(String messageContent) {
@@ -97,4 +131,27 @@ public class SpeedQuizUI {
             e.printStackTrace();
         }
     }
+
+    private void listenForMessages() {
+        try {
+            while (running) { // 플래그를 사용하여 스레드 종료 여부 확인
+                Message message = receiver.takeMessage();
+                if ("chat".equals(message.getType()) && message.getRoomId() == roomId) {
+                    chatArea.append(message.getUserId() + ": " + message.getData() + "\n");
+                }
+            }
+        } catch (Exception e) {
+            if (running) { // 실행 중 예외 발생 시 로그 출력
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void stopThread() {
+        running = false; // 플래그를 false로 설정
+        if (messageThread != null && messageThread.isAlive()) {
+            messageThread.interrupt(); // 스레드 인터럽트
+        }
+    }
+
 }
