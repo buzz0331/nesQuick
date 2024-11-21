@@ -1,5 +1,6 @@
 package client.ui;
 
+import client.thread.MessageReceiver;
 import client.ui.icon.ArrowIcon;
 
 import javax.swing.*;
@@ -11,7 +12,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 public class MenuUI {
-    public MenuUI(Socket socket, ObjectOutputStream out, ObjectInputStream in, String loginUserId) {
+    public MenuUI(Socket socket, ObjectOutputStream out, String loginUserId, MessageReceiver receiver) {
         JFrame frame = new JFrame("Menu");
         frame.setSize(500, 400);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -72,21 +73,21 @@ public class MenuUI {
         playGameButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                new GameModeUI(socket, out, in, loginUserId);
+                new GameModeUI(socket, out, loginUserId, receiver);
             }
         });
 
         customizeGameButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                new GameCustomizeUI(socket, out, in, loginUserId); // GameCustomizeUI로 이동
+                new GameCustomizeUI(socket, out, loginUserId, receiver); // GameCustomizeUI로 이동
             }
         });
 
         logoutButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                new LoginUI(socket, out, in); // LogoutUI로 이동
+                new LoginUI(socket, out, receiver); // LogoutUI로 이동
             }
         });
     }

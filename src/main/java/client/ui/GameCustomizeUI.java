@@ -1,8 +1,9 @@
 package client.ui;
 
+import client.thread.MessageReceiver;
 import client.ui.customize.CooperationCustomizeUI;
 import client.ui.customize.SpeedQuizCustomizeUI;
-import client.ui.customize.VersusCustomizeUI;
+import client.ui.customize.versusCustomizeUI.VersusCustomizeUI;
 import client.ui.icon.ArrowIcon;
 
 import javax.swing.*;
@@ -14,7 +15,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 public class GameCustomizeUI {
-    public GameCustomizeUI(Socket socket, ObjectOutputStream out, ObjectInputStream in, String loginUserId) {
+    public GameCustomizeUI(Socket socket, ObjectOutputStream out, String loginUserId, MessageReceiver receiver) {
         JFrame frame = new JFrame("Game Customize");
         frame.setSize(500, 400);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -75,7 +76,7 @@ public class GameCustomizeUI {
         backButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                new MenuUI(socket, out, in, loginUserId);  // MenuUI로 돌아감
+                new MenuUI(socket, out, loginUserId, receiver);  // MenuUI로 돌아감
             }
         });
 
@@ -83,21 +84,21 @@ public class GameCustomizeUI {
         speedQuizButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                new SpeedQuizCustomizeUI(socket, out, in, loginUserId);
+                new SpeedQuizCustomizeUI(socket, out, loginUserId, receiver);
             }
         });
 
         cooperationModeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                new CooperationCustomizeUI(socket, out, in, loginUserId);
+                new CooperationCustomizeUI(socket, out, loginUserId, receiver);
             }
         });
 
         versusModeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                new VersusCustomizeUI(socket, out, in, loginUserId);
+                new VersusCustomizeUI(socket, out, loginUserId, receiver);
             }
         });
     }

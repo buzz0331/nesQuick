@@ -1,5 +1,6 @@
 package client.ui.gamemode.speedQuiz;
 
+import client.thread.MessageReceiver;
 import client.ui.RoomListUI;
 import client.ui.icon.ArrowIcon;
 import protocol.Message;
@@ -12,18 +13,20 @@ import java.net.Socket;
 
 public class SpeedQuizUI {
     private final ObjectOutputStream out;
-    private final ObjectInputStream in;
     private final int roomId;
     private final String userId;
     private Boolean isMaster;
     private final JTextArea chatArea;
+    private MessageReceiver receiver;
+    private Thread messageThread; // 메시지 처리 스레드
+    private volatile boolean running = true;
 
-    public SpeedQuizUI(Socket socket, ObjectOutputStream out, ObjectInputStream in, int roomId, String userId ,String masterId) {
+    public SpeedQuizUI(Socket socket, ObjectOutputStream out, int roomId, String userId , String masterId, MessageReceiver receiver) {
         this.out = out;
-        this.in = in;
         this.roomId = roomId;
         this.userId = userId;
         this.isMaster = userId.equals(masterId);
+        this.receiver = receiver;
 
         JFrame frame = new JFrame("Speed Quiz");
         frame.setSize(800, 600);
@@ -94,8 +97,9 @@ public class SpeedQuizUI {
 
         // 뒤로가기 버튼 동작
         backButton.addActionListener(e -> {
+            stopThread();
             frame.dispose();
-            new RoomListUI(socket, out, in,"Speed Quiz Mode", userId);
+            new RoomListUI(socket, out, "Speed Quiz Mode", userId, receiver);
         });
 
         // 메시지 전송 동작
@@ -110,7 +114,8 @@ public class SpeedQuizUI {
             }
         });
 
-        new Thread(this::listenForMessages).start();
+        messageThread = new Thread(this::listenForMessages);
+        messageThread.start();
     }
 
     private void sendMessage(String messageContent) {
@@ -129,14 +134,23 @@ public class SpeedQuizUI {
 
     private void listenForMessages() {
         try {
-            while (true) {
-                Message message = (Message) in.readObject();
-                if(message.getType().equals("chat") && message.getRoomId()==roomId) {
+            while (running) { // 플래그를 사용하여 스레드 종료 여부 확인
+                Message message = receiver.takeMessage();
+                if ("chat".equals(message.getType()) && message.getRoomId() == roomId) {
                     chatArea.append(message.getUserId() + ": " + message.getData() + "\n");
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            if (running) { // 실행 중 예외 발생 시 로그 출력
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void stopThread() {
+        running = false; // 플래그를 false로 설정
+        if (messageThread != null && messageThread.isAlive()) {
+            messageThread.interrupt(); // 스레드 인터럽트
         }
     }
 

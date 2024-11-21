@@ -13,7 +13,7 @@ import java.util.Map;
 public class QuizServer {
     private static final int PORT = 12345;
 //    private static final String DB_URL = "jdbc:sqlite:quiz_game.db";
-    private static final Map<Integer, Map<String, Socket>> rooms = new HashMap<Integer, Map<String, Socket>>();
+private static final Map<Integer, Map<String, Socket>> rooms = new HashMap<Integer, Map<String, Socket>>();
 
     public static synchronized void addClientToRoom(int roomId, String userId, Socket clientSocket) {
         rooms.computeIfAbsent(roomId, k -> new HashMap<>()).put(userId, clientSocket);
