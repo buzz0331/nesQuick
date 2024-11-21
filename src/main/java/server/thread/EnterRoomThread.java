@@ -2,6 +2,7 @@ package server.thread;
 
 import protocol.Message;
 import server.QuizServer;
+import server.StoreStream;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -10,12 +11,12 @@ import java.net.Socket;
 public class EnterRoomThread extends Thread {
     private final Message message;
     private final ObjectOutputStream out;
-    private final Socket socket;
+    private final StoreStream storeStream;
 
-    public EnterRoomThread(Message message, ObjectOutputStream out, Socket socket) {
+    public EnterRoomThread(Message message, ObjectOutputStream out, StoreStream storeStream) {
         this.message = message;
         this.out = out;
-        this.socket = socket;
+        this.storeStream = storeStream;
     }
 
     @Override
@@ -25,12 +26,24 @@ public class EnterRoomThread extends Thread {
 
         try {
             // 방에 클라이언트 추가
-            QuizServer.addClientToRoom(roomId, userId, socket);
+            QuizServer.addClientToRoom(roomId, userId, storeStream);
 
             // 방 입장 성공 메시지 전송
             Message response = new Message("enterRoomSuccess")
-                    .setData("Successfully entered room: " + roomId);
+                    .setRoomId(roomId)
+                    .setUserId(userId)
+                    .setData(String.valueOf(QuizServer.getRoomUserCount(roomId)));
             out.writeObject(response);
+            out.flush();
+            System.out.println("EnterRoomThread.run"+ userId);
+
+            // 다른 사용자에게 입장 알림 메시지 브로드캐스트
+            Message broadcastMessage = new Message("userEnter")
+                    .setRoomId(roomId)
+                    .setUserId(userId)
+                    .setData("플레이어 " + userId + " 님이 입장하셨습니다.");
+            System.out.println("EnterRoomThread.run"+ userId);
+            QuizServer.broadcast(roomId, broadcastMessage);
 
         } catch (IOException e) {
             e.printStackTrace();
