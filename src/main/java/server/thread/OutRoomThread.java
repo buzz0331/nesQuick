@@ -10,12 +10,10 @@ import java.net.Socket;
 public class OutRoomThread extends Thread{
     private final Message message;
     private final ObjectOutputStream out;
-    private final Socket socket;
 
-    public OutRoomThread(Message message, ObjectOutputStream out, Socket socket) {
+    public OutRoomThread(Message message, ObjectOutputStream out) {
         this.message = message;
         this.out = out;
-        this.socket = socket;
     }
 
     @Override
