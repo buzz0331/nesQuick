@@ -50,7 +50,7 @@ public class EnterRoomThread extends Thread {
                     out.writeObject(errorResponse);
                 }
             }
-/*
+
             // 다른 사용자에게 입장 알림 메시지 브로드캐스트
             Message broadcastMessage = new Message("userEnter")
                     .setRoomId(roomId)
@@ -58,7 +58,7 @@ public class EnterRoomThread extends Thread {
                     .setData("플레이어 " + userId + " 님이 입장하셨습니다.");
             System.out.println("EnterRoomThread.run"+ userId);
             QuizServer.broadcast(roomId, broadcastMessage);
-*/
+
 
         } catch (IOException | SQLException e) {
             e.printStackTrace();
