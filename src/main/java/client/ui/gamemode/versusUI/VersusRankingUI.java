@@ -1,4 +1,4 @@
-package client.ui.gamemode;
+package client.ui.gamemode.versusUI;
 
 import client.thread.MessageReceiver;
 import client.ui.RoomListUI;
@@ -7,25 +7,28 @@ import protocol.Message;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.List;
 
-public class CooperationUI {
+public class VersusRankingUI {
     private final Socket socket;
     private final ObjectOutputStream out;
     private final int roomId;
     private final String userId;
+    private List<String> ranking;
+    private MessageReceiver receiver;
 
-    public CooperationUI(Socket socket, ObjectOutputStream out, int roomId, String userId, MessageReceiver receiver) {
+    public VersusRankingUI(Socket socket, ObjectOutputStream out, int roomId, String userId, List<String> ranking, MessageReceiver receiver) {
         this.socket = socket;
         this.out = out;
         this.roomId = roomId;
         this.userId = userId;
+        this.ranking = ranking;
+        this.receiver = receiver;
 
-        JFrame frame = new JFrame("Cooperation");
+        JFrame frame = new JFrame("VersusRanking");
         frame.setSize(800, 600);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -36,7 +39,7 @@ public class CooperationUI {
 
         // 로고
         JLabel logoLabel = new JLabel(new ImageIcon("./src/main/java/client/ui/nesquick_logo.png"));
-        logoLabel.setBounds(700, 10, 80, 80);
+        logoLabel.setBounds(530, 10, 250, 100);
         panel.add(logoLabel);
 
         // 뒤로가기 버튼
@@ -47,49 +50,40 @@ public class CooperationUI {
         backButton.setFocusPainted(false);
         panel.add(backButton);
 
-        // 채팅 영역
-        JTextArea chatArea = new JTextArea();
-        chatArea.setEditable(true);
-        JScrollPane chatScroll = new JScrollPane(chatArea);
-        chatScroll.setBounds(50, 100, 700, 350);
-        panel.add(chatScroll);
+        // 랭킹
+        JLabel headLabel = new JLabel("순위     이름     점수");
+        headLabel.setBounds(150, 150, 200, 30);
+        headLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 20));
+        panel.add(headLabel);
 
-        // 메시지 입력 필드
-        JTextField messageField = new JTextField();
-        messageField.setBounds(50, 470, 600, 30);
-        panel.add(messageField);
-
-        // 전송 버튼
-        JButton sendButton = new JButton("Send");
-        sendButton.setBounds(660, 470, 80, 30);
-        panel.add(sendButton);
-
+        JLabel items[] = new JLabel[ranking.size()];
+        for(int i=0;i<ranking.size();i++){
+            String tmp[] = ranking.get(i).split("\t");
+            items[i] = new JLabel("  "+tmp[0]+"     "+tmp[1]+"     "+tmp[2]);
+            items[i].setBounds(150, 200+i*50, 200, 30);
+            items[i].setFont(new Font("Malgun Gothic", Font.PLAIN, 20));
+            panel.add(items[i]);
+        }
         frame.setVisible(true);
 
         // 뒤로가기 버튼 동작
         backButton.addActionListener(e -> {
+            outRoom(roomId);
             frame.dispose();
-            new RoomListUI(socket, out, "Cooperation Mode", userId, receiver);
-        });
-
-        // 메시지 전송 동작
-        sendButton.addActionListener(e -> {
-            String message = messageField.getText();
-            if (!message.isEmpty()) {
-                sendMessage(message);
-                messageField.setText("");
-            }
+            new RoomListUI(socket, out, "Versus Mode", this.userId, receiver);
         });
 
     }
 
-    private void sendMessage(String messageContent) {
+    private void outRoom(int roomId) {
         try {
-            Message message = new Message("chat")
+            Message outRequest = new Message("outRoom")
                     .setUserId(userId)
-                    .setData(messageContent)
-                    .setRoomId(roomId);
-            out.writeObject(message);
+                    .setData(String.valueOf(roomId));
+            out.writeObject(outRequest);
+
+            Message response = receiver.takeMessage();
+            System.out.println(response);
         } catch (Exception e) {
             e.printStackTrace();
         }

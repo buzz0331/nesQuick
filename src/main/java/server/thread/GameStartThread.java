@@ -25,21 +25,21 @@ public class GameStartThread extends Thread{
         Message response = new Message("startGameSuccess")
                 .setData("Game Started Successfully");
 
-        for(String userId : userIds) {
-            ObjectOutputStream userOut = QuizServer.getClientOutputStream(userId);
-            System.out.println(userId+ " 추가" + userOut);
-            if(userOut != null) {
-                try {
-                    userOut.writeObject(response);
-                    System.out.println(response);
-                    userOut.flush();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            } else {
-                System.out.println("유저" + userId + "의 출력 스트림을 찾을 수 없음");
-            }
-        }
+//        for(String userId : userIds) {
+//            ObjectOutputStream userOut = QuizServer.getClientOutputStream(userId);
+//            System.out.println(userId+ " 추가" + userOut);
+//            if(userOut != null) {
+//                try {
+//                    userOut.writeObject(response);
+//                    System.out.println(response);
+//                    userOut.flush();
+//                } catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            } else {
+//                System.out.println("유저" + userId + "의 출력 스트림을 찾을 수 없음");
+//            }
+//        }
     }
 }
 

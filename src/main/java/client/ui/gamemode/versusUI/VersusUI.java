@@ -1,8 +1,7 @@
-package client.ui.gamemode.speedQuiz;
+package client.ui.gamemode.versusUI;
 
 import client.thread.MessageReceiver;
 import client.ui.RoomListUI;
-import client.ui.gamemode.versusUI.Quiz;
 import client.ui.icon.ArrowIcon;
 import protocol.Message;
 
@@ -14,25 +13,22 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SpeedQuizUI {
+public class VersusUI {
+    private final Socket socket;
     private final ObjectOutputStream out;
     private final int roomId;
     private final String userId;
-    private Boolean isMaster;
-    private final JTextArea chatArea;
-    private MessageReceiver receiver;
-    private Thread messageThread; // 메시지 처리 스레드
-    private volatile boolean running = true;
     private List<Quiz> list;
+    private MessageReceiver receiver;
 
-    public SpeedQuizUI(Socket socket, ObjectOutputStream out, int roomId, String userId, String masterId, MessageReceiver receiver) {
+    public VersusUI(Socket socket, ObjectOutputStream out, int roomId, String userId, MessageReceiver receiver) {
+        this.socket = socket;
         this.out = out;
         this.roomId = roomId;
         this.userId = userId;
-        this.isMaster = userId.equals(masterId);
         this.receiver = receiver;
 
-        JFrame frame = new JFrame("Speed Quiz");
+        JFrame frame = new JFrame("Versus");
         frame.setSize(800, 600);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -43,7 +39,7 @@ public class SpeedQuizUI {
 
         // 로고
         JLabel logoLabel = new JLabel(new ImageIcon("./src/main/java/client/ui/nesquick_logo.png"));
-        logoLabel.setBounds(700, 10, 80, 80);
+        logoLabel.setBounds(530, 10, 250, 100);
         panel.add(logoLabel);
 
         // 뒤로가기 버튼
@@ -54,11 +50,39 @@ public class SpeedQuizUI {
         backButton.setFocusPainted(false);
         panel.add(backButton);
 
+        // 게임 시작 버튼
+        JButton startButton = new JButton("Game Start");
+        startButton.setBounds(10,50,150,30);
+        panel.add(startButton);
+
+
+
+        // 퀴즈 set 리스트 라벨
+        JLabel titleLabel = new JLabel("Quiz set 리스트");
+        titleLabel.setBounds(200, 50, 200, 30);
+        titleLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 18));
+        panel.add(titleLabel);
+
+        // 서버로부터 퀴즈 set들 가져오기
+        List<String> quizSets = fetchVersusQuizSetsFromServer();
+
+        // 퀴즈 set 리스트 표시
+        DefaultListModel<String> listModel = new DefaultListModel<>();
+        for (String s : quizSets) {
+            listModel.addElement(s);
+        }
+        JList<String> quizSetList = new JList<>(listModel);
+        quizSetList.setBounds(50, 100, 500, 200);
+        quizSetList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        panel.add(quizSetList);
+
+
+
         // 채팅 영역
-        chatArea = new JTextArea();
+        JTextArea chatArea = new JTextArea();
         chatArea.setEditable(false);
         JScrollPane chatScroll = new JScrollPane(chatArea);
-        chatScroll.setBounds(50, 100, 700, 350);
+        chatScroll.setBounds(50, 310, 700, 140);
         panel.add(chatScroll);
 
         // 메시지 입력 필드
@@ -71,58 +95,20 @@ public class SpeedQuizUI {
         sendButton.setBounds(660, 470, 80, 30);
         panel.add(sendButton);
 
-        // 퀴즈 set 리스트 라벨
-        JLabel titleLabel = new JLabel("Quiz set 리스트");
-        titleLabel.setBounds(200, 50, 200, 30);
-        titleLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 18));
-        panel.add(titleLabel);
-
-        // 서버로부터 퀴즈 set들 가져오기
-        List<String> quizSets = fetchSpeedQuizSetsFromServer();
-
-        // 퀴즈 set 리스트 표시
-        DefaultListModel<String> listModel = new DefaultListModel<>();
-        for (String s : quizSets) {
-            listModel.addElement(s);
-        }
-        JList<String> quizSetList = new JList<>(listModel);
-        quizSetList.setBounds(50, 100, 500, 200);
-        quizSetList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        panel.add(quizSetList);
-
-        //방장일 경우에 시작 버튼 보이도록
-        if (isMaster) {
-            JButton startButton = new JButton("Start");
-            startButton.setBounds(350, 530, 100, 30);  // 위치와 크기 설정
-            startButton.setBackground(new Color(255, 223, 85));
-            startButton.setForeground(Color.BLACK);
-            startButton.setFocusPainted(false);
-
-            panel.add(startButton);
-
-            startButton.addActionListener(e -> {
-                list = fetchSpeedQuizListFromServer(quizSetList.getSelectedValue());
-                frame.dispose();
-                new StartSpeedQuiz(socket, out, roomId, userId, list, receiver);
-            });
-        }
-        //일단 방장 없이
-//        JButton startButton = new JButton("Start");
-//        startButton.setBounds(350, 530, 100, 30);  // 위치와 크기 설정
-//        startButton.setBackground(new Color(255, 223, 85));
-//        startButton.setForeground(Color.BLACK);
-//        startButton.setFocusPainted(false);
-//
-//        panel.add(startButton);
-
         frame.setVisible(true);
-
 
         // 뒤로가기 버튼 동작
         backButton.addActionListener(e -> {
-            stopThread();
+            outRoom(roomId);
             frame.dispose();
-            new RoomListUI(socket, out, "Speed Quiz Mode", userId, receiver);
+            new RoomListUI(socket, out, "Versus Mode", userId, receiver);
+        });
+
+        // 게임 시작 버튼 동작
+        startButton.addActionListener(e -> {
+            list = fetchVersusQuizListFromServer(quizSetList.getSelectedValue());
+            frame.dispose();
+            new VersusStartUI(socket, out, roomId, userId, list, receiver);
         });
 
         // 메시지 전송 동작
@@ -131,16 +117,10 @@ public class SpeedQuizUI {
             if (!message.isEmpty()) {
                 sendMessage(message);
                 messageField.setText("");
-
-                //전송한 메시지를 chatArea에 표시
-                chatArea.append(userId + ": " + message + "\n");
             }
         });
 
-        messageThread = new Thread(this::listenForMessages);
-        messageThread.start();
     }
-
 
     private void sendMessage(String messageContent) {
         try {
@@ -148,18 +128,16 @@ public class SpeedQuizUI {
                     .setUserId(userId)
                     .setData(messageContent)
                     .setRoomId(roomId);
-            System.out.println("채팅 송신");
             out.writeObject(message);
-            out.flush();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private java.util.List<String> fetchSpeedQuizSetsFromServer() {
-        java.util.List<String> quizSetList = new ArrayList<>();
+    private List<String> fetchVersusQuizSetsFromServer() {
+        List<String> quizSetList = new ArrayList<>();
         try {
-            Message request = new Message("fetchSpeedQuizSets")
+            Message request = new Message("fetchVersusQuizSets")
                     .setUserId(userId)
                     .setRoomId(roomId);
             out.writeObject(request);
@@ -178,10 +156,10 @@ public class SpeedQuizUI {
         return quizSetList;
     }
 
-    private java.util.List<Quiz> fetchSpeedQuizListFromServer(String selectedValue) {
+    private List<Quiz> fetchVersusQuizListFromServer(String selectedValue) {
         List<Quiz> quizList = new ArrayList<>();
         try {
-            Message request = new Message("fetchSpeedQuizList")
+            Message request = new Message("fetchVersusQuizList")
                     .setUserId(userId)
                     .setRoomId(roomId)
                     .setData(selectedValue);
@@ -202,26 +180,17 @@ public class SpeedQuizUI {
         return quizList;
     }
 
-    private void listenForMessages() {
+    private void outRoom(int roomId) {
         try {
-            while (running) { // 플래그를 사용하여 스레드 종료 여부 확인
-                Message message = receiver.takeMessage();
-                if ("chat".equals(message.getType()) && message.getRoomId() == roomId) {
-                    chatArea.append(message.getUserId() + ": " + message.getData() + "\n");
-                }
-            }
+            Message outRequest = new Message("outRoom")
+                    .setUserId(userId)
+                    .setData(String.valueOf(roomId));
+            out.writeObject(outRequest);
+
+            Message response = receiver.takeMessage();
+            System.out.println(response);
         } catch (Exception e) {
-            if (running) { // 실행 중 예외 발생 시 로그 출력
-                e.printStackTrace();
-            }
+            e.printStackTrace();
         }
     }
-
-    private void stopThread() {
-        running = false; // 플래그를 false로 설정
-        if (messageThread != null && messageThread.isAlive()) {
-            messageThread.interrupt(); // 스레드 인터럽트
-        }
-    }
-
 }

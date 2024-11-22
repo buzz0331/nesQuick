@@ -1,5 +1,6 @@
 package client.ui;
 
+import client.thread.MessageReceiver;
 import client.ui.icon.ArrowIcon;
 import javax.swing.*;
 import java.awt.*;
@@ -10,7 +11,7 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 
 public class GameModeUI {
-    public GameModeUI(Socket socket, ObjectOutputStream out, ObjectInputStream in, String loginUserId) {
+    public GameModeUI(Socket socket, ObjectOutputStream out, String loginUserId, MessageReceiver receiver) {
         JFrame frame = new JFrame("Game Modes");
         frame.setSize(500, 400);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -68,7 +69,7 @@ public class GameModeUI {
         backButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                new LoginUI(socket, out, in);  // LoginUI로 돌아감
+                new LoginUI(socket, out, receiver);  // LoginUI로 돌아감
             }
         });
 
@@ -76,21 +77,21 @@ public class GameModeUI {
         speedQuizButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                new RoomListUI(socket, out, in, "Speed Quiz Mode", loginUserId);
+                new RoomListUI(socket, out, "Speed Quiz Mode", loginUserId, receiver);
             }
         });
 
         cooperationModeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                new RoomListUI(socket, out, in, "Cooperation Mode", loginUserId);
+                new RoomListUI(socket, out, "Cooperation Mode", loginUserId, receiver);
             }
         });
 
         versusModeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                new RoomListUI(socket, out, in, "Versus Mode", loginUserId);
+                new RoomListUI(socket, out, "Versus Mode", loginUserId, receiver);
             }
         });
     }
