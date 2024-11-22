@@ -108,11 +108,11 @@ public class SpeedQuizUI {
         // 뒤로가기 버튼 동작
         backButton.addActionListener(e -> {
             stopThread();
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException ex) {
-                throw new RuntimeException(ex);
-            }
+//            try {
+//                Thread.sleep(500);
+//            } catch (InterruptedException ex) {
+//                throw new RuntimeException(ex);
+//            }
             frame.dispose();
             new RoomListUI(socket, out, "Speed Quiz Mode", userId, receiver);
         });
