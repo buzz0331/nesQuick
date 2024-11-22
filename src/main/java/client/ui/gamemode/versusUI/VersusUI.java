@@ -118,6 +118,7 @@ public class VersusUI {
                     try {
                         // 서버로부터 메시지 수신
                         Message message = receiver.takeMessage();
+                        System.out.println(message.getData());
 
                         if ("gameStart".equals(message.getType())) {
                             // 게임 시작 관련 데이터 수신
@@ -136,23 +137,6 @@ public class VersusUI {
                     }
                 }
             }).start();
-/*
-            VersusStartHandler startHandler = new VersusStartHandler(receiver);
-            startHandler.start();
-
-            Message response = null;
-            try {
-                response = receiver.takeMessage();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-            String data = response.getData();
-            String quizArr[] = data.split("\n");
-            for(int i=0;i< quizArr.length;i++){
-                String tmp[] = quizArr[i].split("\t");
-                list.add(new Quiz(Integer.parseInt(tmp[0]),Integer.parseInt(tmp[1]),tmp[2],tmp[3]));
-            }
-            */
 
         }
 
