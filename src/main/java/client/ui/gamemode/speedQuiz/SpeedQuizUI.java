@@ -11,8 +11,12 @@ import java.awt.*;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+<<<<<<< HEAD
 import java.util.ArrayList;
 import java.util.List;
+=======
+import java.util.Map;
+>>>>>>> main
 
 public class SpeedQuizUI {
     private final ObjectOutputStream out;
@@ -23,14 +27,22 @@ public class SpeedQuizUI {
     private MessageReceiver receiver;
     private Thread messageThread; // 메시지 처리 스레드
     private volatile boolean running = true;
+<<<<<<< HEAD
     private List<Quiz> list;
 
     public SpeedQuizUI(Socket socket, ObjectOutputStream out, int roomId, String userId, String masterId, MessageReceiver receiver) {
+=======
+    private int userCount;
+    private JLabel userCountLabel;
+
+    public SpeedQuizUI(Socket socket, ObjectOutputStream out, int roomId, String userId , String masterId, MessageReceiver receiver, int userCount) {
+>>>>>>> main
         this.out = out;
         this.roomId = roomId;
         this.userId = userId;
         this.isMaster = userId.equals(masterId);
         this.receiver = receiver;
+        this.userCount = userCount;
 
         JFrame frame = new JFrame("Speed Quiz");
         frame.setSize(800, 600);
@@ -45,6 +57,12 @@ public class SpeedQuizUI {
         JLabel logoLabel = new JLabel(new ImageIcon("./src/main/java/client/ui/nesquick_logo.png"));
         logoLabel.setBounds(700, 10, 80, 80);
         panel.add(logoLabel);
+
+        // 사용자 수 라벨
+        userCountLabel = new JLabel("현재 사용자: " + userCount + "명");
+        userCountLabel.setBounds(50, 50, 200, 30);
+        panel.add(userCountLabel);
+
 
         // 뒤로가기 버튼
         JButton backButton = new JButton(new ArrowIcon(20, Color.BLACK));
@@ -121,6 +139,11 @@ public class SpeedQuizUI {
         // 뒤로가기 버튼 동작
         backButton.addActionListener(e -> {
             stopThread();
+//            try {
+//                Thread.sleep(500);
+//            } catch (InterruptedException ex) {
+//                throw new RuntimeException(ex);
+//            }
             frame.dispose();
             new RoomListUI(socket, out, "Speed Quiz Mode", userId, receiver);
         });
@@ -206,8 +229,13 @@ public class SpeedQuizUI {
         try {
             while (running) { // 플래그를 사용하여 스레드 종료 여부 확인
                 Message message = receiver.takeMessage();
+                System.out.println("SpeedQuizUI.listenForMessages");
                 if ("chat".equals(message.getType()) && message.getRoomId() == roomId) {
                     chatArea.append(message.getUserId() + ": " + message.getData() + "\n");
+                } else if ("userEnter".equals(message.getType()) && message.getRoomId() == roomId) {
+                    chatArea.append(message.getData() + "\n");
+                    userCount++;
+                    updateUserCountLabel();
                 }
             }
         } catch (Exception e) {
@@ -224,4 +252,7 @@ public class SpeedQuizUI {
         }
     }
 
+    private void updateUserCountLabel() {
+        userCountLabel.setText("현재 사용자: " + userCount + "명");
+    }
 }
