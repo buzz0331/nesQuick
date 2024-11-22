@@ -31,6 +31,9 @@ public class VersusUI {
         this.masterId = masterId;
         this.gameMode = gameMode;
 
+        // 방장이 아닌 경우 게임 시작 메세지를 받기 위한 스레드
+        Thread receiverThread;
+
         JFrame frame = new JFrame("Versus");
         frame.setSize(800, 600);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -86,6 +89,13 @@ public class VersusUI {
                 frame.dispose();
                 new VersusStartUI(socket, out, roomId, userId, list, receiver);
             });
+
+            // 뒤로가기 버튼 동작
+            backButton.addActionListener(e -> {
+                outRoom(roomId);
+                frame.dispose();
+                new RoomListUI(socket, out, "Versus Mode", userId, receiver);
+            });
         }
 
         // 채팅 영역
@@ -113,12 +123,11 @@ public class VersusUI {
             chatArea.append("Waiting for the host to start the game...\n");
 
             // 별도의 스레드에서 서버 메시지 수신 처리
-            new Thread(() -> {
-                while (true) {
+            receiverThread = new Thread(() -> {
+                while (!Thread.currentThread().isInterrupted()) {
                     try {
                         // 서버로부터 메시지 수신
                         Message message = receiver.takeMessage();
-                        System.out.println(message.getData());
 
                         if ("gameStart".equals(message.getType())) {
                             // 게임 시작 관련 데이터 수신
@@ -131,21 +140,23 @@ public class VersusUI {
                             });
                             break; // 게임 시작 메시지 처리 후 루프 종료
                         }
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt(); // 스레드 종료 신호 처리
                     } catch (Exception e) {
                         e.printStackTrace();
                         break; // 예외 발생 시 루프 종료
                     }
                 }
-            }).start();
-
+            });
+            receiverThread.start();
+            // 뒤로가기 버튼 동작
+            backButton.addActionListener(e -> {
+                receiverThread.interrupt();
+                outRoom(roomId);
+                frame.dispose();
+                new RoomListUI(socket, out, "Versus Mode", userId, receiver);
+            });
         }
-
-        // 뒤로가기 버튼 동작
-        backButton.addActionListener(e -> {
-            outRoom(roomId);
-            frame.dispose();
-            new RoomListUI(socket, out, "Versus Mode", userId, receiver);
-        });
 
         // 메시지 전송 동작
         sendButton.addActionListener(e -> {
@@ -235,7 +246,7 @@ public class VersusUI {
             out.writeObject(outRequest);
 
             Message response = receiver.takeMessage();
-            System.out.println(response);
+            System.out.println(response.getData());
         } catch (Exception e) {
             e.printStackTrace();
         }
