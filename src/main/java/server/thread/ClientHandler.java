@@ -1,7 +1,12 @@
 package server.thread;
 
 import protocol.Message;
+import server.QuizServer;
 import server.StoreStream;
+import server.thread.speedThread.FetchSpeedQuizListThread;
+import server.thread.speedThread.FetchSpeedQuizSetsThread;
+import server.thread.speedThread.FetchSpeedRankingThread;
+import server.thread.speedThread.SendSpeedCustomQuizThread;
 import server.thread.versusThread.FetchVersusQuizListThread;
 import server.thread.versusThread.FetchVersusQuizSetsThread;
 import server.thread.versusThread.FetchVersusRankingThread;
@@ -11,6 +16,7 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.List;
 
 public class ClientHandler implements Runnable {
     private ObjectOutputStream out;
@@ -47,6 +53,10 @@ public class ClientHandler implements Runnable {
                 } else if ("chat".equals(message.getType())) {
                     System.out.println("채팅 수신");
                     new ChattingThread(message).start();
+                } else if ("startGame".equals(message.getType())){
+                    int roomId = message.getRoomId();
+                    List<String> userIds = QuizServer.getUserIdsInRoom(roomId);
+                    new GameStartThread(message,out,userIds).start();
                 } else if ("fetchVersusQuizSets".equals(message.getType())){
                     new FetchVersusQuizSetsThread(message,out).start();
                 } else if ("fetchVersusQuizList".equals(message.getType())){
@@ -55,6 +65,14 @@ public class ClientHandler implements Runnable {
                     new FetchVersusRankingThread(message,out).start();
                 } else if("sendVersusCustomQuiz".equals(message.getType())){
                     new SendVersusCustomQuizThread(message,out).start();
+                }  else if ("fetchSpeedQuizSets".equals(message.getType())){
+                    new FetchSpeedQuizSetsThread(message,out).start();
+                } else if ("fetchSpeedQuizList".equals(message.getType())){
+                    new FetchSpeedQuizListThread(message,out).start();
+                } else if("fetchSpeedRanking".equals(message.getType())){
+                    new FetchSpeedRankingThread(message,out).start();
+                } else if("sendSpeedCustomQuiz".equals(message.getType())){
+                    new SendSpeedCustomQuizThread(message,out).start();
                 }
             }
         } catch (IOException | ClassNotFoundException e) {
