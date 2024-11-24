@@ -125,7 +125,7 @@ public class RoomListUI {
                 switch (gameMode) {
                     case "Speed Quiz Mode":
                         frame.dispose();
-                        new SpeedQuizUI(socket, out, roomId, userId, masterId, receiver, userCount);
+                        new SpeedQuizUI(socket, out, roomId, userId, masterId, receiver, userCount,gameMode);
                         break;
                     case "Versus Mode":
                         frame.dispose();
