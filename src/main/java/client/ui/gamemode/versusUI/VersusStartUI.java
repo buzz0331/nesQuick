@@ -75,6 +75,7 @@ public class VersusStartUI {
         panel.removeAll();
 
         Quiz currentQuiz = quizList.get(currentIndex[0]);
+        int timeLimit = currentQuiz.getTime();
         String question = currentQuiz.getQuestion();
         String answer = currentQuiz.getAnswer();
 
@@ -97,13 +98,23 @@ public class VersusStartUI {
         sendButton.setFont(new Font("Malgun Gothic", Font.PLAIN, 15));
         panel.add(sendButton);
 
+        JLabel timerLabel = new JLabel("남은 시간: " + timeLimit + "초");
+        timerLabel.setBounds(330, 380, 150, 30);
+        timerLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 20));
+        panel.add(timerLabel);
+
         panel.add(logoLabel);
         panel.add(backButton);
         panel.revalidate();
         panel.repaint();
 
+        // Timer 설정
+        Timer timer = new Timer(1000, null); // 1초마다 실행
+        final int[] timeRemaining = {timeLimit};
+
         sendButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                timer.stop(); // 타이머 중지
                 String userAnswer = ansField.getText();
                 if (userAnswer.equals(answer)) {
                     score++;
@@ -112,9 +123,10 @@ public class VersusStartUI {
                     JOptionPane.showMessageDialog(frame, "오답입니다. 현재 점수: " + score);
                 }
 
+                // 다음 문제로 이동
                 currentIndex[0]++;
                 if (currentIndex[0] < quizList.size()) {
-                    displayQuiz(panel, frame, logoLabel, backButton, currentIndex); // 다음 문제 호출
+                    displayQuiz(panel, frame, logoLabel, backButton, currentIndex);
                 } else {
                     JOptionPane.showMessageDialog(frame, "퀴즈가 종료되었습니다!\n최종 점수: " + score);
                     List<String> list = fetchVersusRankingFromServer();
@@ -123,6 +135,30 @@ public class VersusStartUI {
                 }
             }
         });
+
+        // 타이머 이벤트 추가
+        timer.addActionListener(e -> {
+            timeRemaining[0]--;
+            timerLabel.setText("남은 시간: " + timeRemaining[0] + "초");
+
+            if (timeRemaining[0] <= 0) {
+                timer.stop();
+                JOptionPane.showMessageDialog(frame, "시간 초과! 오답 처리됩니다.");
+                // 다음 문제로 이동
+                currentIndex[0]++;
+                if (currentIndex[0] < quizList.size()) {
+                    displayQuiz(panel, frame, logoLabel, backButton, currentIndex);
+                } else {
+                    JOptionPane.showMessageDialog(frame, "퀴즈가 종료되었습니다!\n최종 점수: " + score);
+                    List<String> list = fetchVersusRankingFromServer();
+                    frame.dispose();
+                    new VersusRankingUI(socket, out, roomId, userId, list, receiver);
+                }
+            }
+        });
+
+        // 타이머 시작
+        timer.start();
     }
 
     private List<String> fetchVersusRankingFromServer() {

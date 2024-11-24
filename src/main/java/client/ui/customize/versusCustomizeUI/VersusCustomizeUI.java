@@ -87,7 +87,7 @@ public class VersusCustomizeUI {
         checkButton.addActionListener(e -> {
             String title = titleField.getText();
             String selectedValue = (String) comboBox.getSelectedItem();
-            sendData = title+"\n"+selectedValue+"\n";
+            sendData = "Versus Mode"+"\n"+title+"\n";
             frame.dispose();
             new VersusCustomizeGetQuizUI(socket, out, userId, Integer.parseInt(selectedValue),sendData, receiver);
         });

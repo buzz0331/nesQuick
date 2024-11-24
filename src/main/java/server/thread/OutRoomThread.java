@@ -30,6 +30,7 @@ public class OutRoomThread extends Thread{
                     .setData("Successfully gone out from room: " + roomId);
             out.writeObject(response);
 
+
         } catch (IOException e) {
             e.printStackTrace();
             try {
@@ -41,5 +42,6 @@ public class OutRoomThread extends Thread{
                 ioException.printStackTrace();
             }
         }
+
     }
 }

@@ -110,3 +110,4 @@ public class Message implements Serializable {
         return this;
     }
 }
+

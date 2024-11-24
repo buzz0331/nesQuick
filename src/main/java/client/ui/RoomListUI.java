@@ -128,7 +128,7 @@ public class RoomListUI {
                         break;
                     case "Versus Mode":
                         frame.dispose();
-                        new VersusUI(socket, out, roomId, userId, receiver);
+                        new VersusUI(socket, out, roomId, userId, masterId, receiver, gameMode, userCount);
                         break;
                     case "Cooperation Mode":
                         frame.dispose();
@@ -176,6 +176,7 @@ public class RoomListUI {
             e.printStackTrace();
             roomMap.put(-1, "Failed to load rooms");
         }
+
     }
 
 }
