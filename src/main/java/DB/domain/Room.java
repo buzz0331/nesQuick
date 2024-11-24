@@ -15,7 +15,7 @@ public class Room {
         this.game_category = game_category;
     }
 
-    public boolean getMasterId(String userId) {
-        return master_id.equals(userId);
+    public String getMasterId(String userId) {
+        return master_id;
     }
 }
