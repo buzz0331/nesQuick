@@ -73,6 +73,11 @@ public class ClientHandler implements Runnable {
                     new FetchSpeedRankingThread(message,out).start();
                 } else if("sendSpeedCustomQuiz".equals(message.getType())){
                     new SendSpeedCustomQuizThread(message,out).start();
+                } else if("nextSpeedQuiz".equals(message.getType())){
+                    Message response = new Message("toNextSpeedQuiz")
+                            .setRoomId(message.getRoomId())
+                            .setData(message.getData());
+                    QuizServer.broadcastToAll(message.getRoomId(), response);
                 }
             }
         } catch (IOException | ClassNotFoundException e) {
