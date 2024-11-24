@@ -23,23 +23,26 @@ public class GameStartThread extends Thread{
     public void run() {
         System.out.println("Game Start");
         Message response = new Message("startGameSuccess")
+                .setRoomId(message.getRoomId())
                 .setData("Game Started Successfully");
 
-//        for(String userId : userIds) {
-//            ObjectOutputStream userOut = QuizServer.getClientOutputStream(userId);
-//            System.out.println(userId+ " 추가" + userOut);
-//            if(userOut != null) {
-//                try {
-//                    userOut.writeObject(response);
-//                    System.out.println(response);
-//                    userOut.flush();
-//                } catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            } else {
-//                System.out.println("유저" + userId + "의 출력 스트림을 찾을 수 없음");
-//            }
-//        }
+        QuizServer.broadcast(message.getRoomId(), response);
+
+        for(String userId : userIds) {
+            ObjectOutputStream userOut = QuizServer.getClientOutPutStream(userId);
+            System.out.println(userId+ " 추가" + userOut);
+            if(userOut != null) {
+                try {
+                    userOut.writeObject(response);
+                    System.out.println(response);
+                    userOut.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                System.out.println("유저" + userId + "의 출력 스트림을 찾을 수 없음");
+            }
+        }
     }
 }
 
