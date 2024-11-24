@@ -78,6 +78,25 @@ private static final Map<Integer, Map<String, StoreStream>> rooms = new HashMap<
         }
     }
 
+    //스피드퀴즈에서 다음 문제 넘어갈 때 사용하기 위해 작성
+    public static synchronized void broadcastToAll(int roomId, Message message) {
+        Map<String, StoreStream> room = rooms.get(roomId);
+        if (room != null) {
+            for (Map.Entry<String, StoreStream> entry : room.entrySet()) {
+                StoreStream storeStream = entry.getValue();
+
+                try {
+                    ObjectOutputStream out = storeStream.getOut();
+                    out.writeObject(message);
+                    out.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        }
+    }
+
     public static void main(String[] args) throws IOException {
         Socket clientSocket = null;
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
