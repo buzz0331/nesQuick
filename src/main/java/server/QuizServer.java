@@ -19,7 +19,7 @@ import java.sql.ResultSet;
 public class QuizServer {
     private static final int PORT = 12345;
     private static final String DB_URL = "jdbc:sqlite:quiz_game.db";
-    private static final Map<Integer, Map<String, StoreStream>> rooms = new HashMap<Integer, Map<String, StoreStream>>();
+private static final Map<Integer, Map<String, StoreStream>> rooms = new HashMap<Integer, Map<String, StoreStream>>();
     // 랭킹 처리를 위해 추가한 Map입니다
     private static final Map<Integer, Map<String, Integer>> roomScores = new HashMap<>(); // 방 별 사용자 점수 저장
     private static final Map<String, ObjectOutputStream> clientOutputStreams = new HashMap<>();
@@ -145,12 +145,12 @@ public class QuizServer {
         Map<String, StoreStream> room = rooms.get(roomId);
         return (room != null) ? room.size() : 0;
     }
-
+    
     // 방의 모든 사용자 ID 가져오기
     public static synchronized List<String> getUserIdsInRoom(int roomId) {
         Map<String, Socket> clients = roomClients.get(roomId);
         //clients가 없으면 빈 배열 반환
-        return (clients != null) ? new ArrayList<>(clients.keySet()) : new ArrayList<>();
+        return (clients != null) ? new ArrayList<>(clients.keySet()) : new ArrayList<>(); 
     }
     public static String getRoomMaster(int roomId) {
         try (Connection conn = getConnection();
