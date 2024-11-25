@@ -102,4 +102,7 @@ private static final Map<Integer, Map<String, StoreStream>> rooms = new HashMap<
     }
 
 
+    public static String getRoomMaster(int roomId) {
+        return null;
+    }
 }
