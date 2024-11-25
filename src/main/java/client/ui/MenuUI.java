@@ -35,13 +35,13 @@ public class MenuUI {
         logoLabel.setBounds(125, 30, 250, 100);
         panel.add(logoLabel);
 
-        JLabel menuLabel = new JLabel("메뉴를 선택하세요");
+        JLabel menuLabel = new JLabel("Choose Menu");
         menuLabel.setBounds(175, 150, 200, 30);
         menuLabel.setFont(new Font("Arial", Font.BOLD, 16));
         panel.add(menuLabel);
 
         // 게임 실행 버튼
-        JButton playGameButton = new JButton("게임 실행");
+        JButton playGameButton = new JButton("Game Start");
         playGameButton.setBounds(150, 190, 200, 40);
         playGameButton.setBackground(new Color(255, 223, 85));
         playGameButton.setForeground(Color.BLACK);
@@ -50,7 +50,7 @@ public class MenuUI {
         panel.add(playGameButton);
 
         // 게임 커스터마이징 버튼
-        JButton customizeGameButton = new JButton("게임 커스터마이징");
+        JButton customizeGameButton = new JButton("Game Customize");
         customizeGameButton.setBounds(150, 240, 200, 40);
         customizeGameButton.setBackground(new Color(255, 223, 85));
         customizeGameButton.setForeground(Color.BLACK);
@@ -59,7 +59,7 @@ public class MenuUI {
         panel.add(customizeGameButton);
 
         // 로그아웃 버튼
-        JButton logoutButton = new JButton("로그아웃");
+        JButton logoutButton = new JButton("Log Out");
         logoutButton.setBounds(150, 290, 200, 40);
         logoutButton.setBackground(new Color(255, 223, 85));
         logoutButton.setForeground(Color.BLACK);

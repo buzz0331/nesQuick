@@ -14,4 +14,8 @@ public class Room {
         this.master_id = master_id;
         this.game_category = game_category;
     }
+
+    public String getMasterId(String userId) {
+        return master_id;
+    }
 }

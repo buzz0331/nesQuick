@@ -5,17 +5,43 @@ import server.thread.ClientHandler;
 
 import java.io.*;
 import java.net.*;
+import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.ResultSet;
+
 public class QuizServer {
     private static final int PORT = 12345;
-//    private static final String DB_URL = "jdbc:sqlite:quiz_game.db";
+    private static final String DB_URL = "jdbc:sqlite:quiz_game.db";
 private static final Map<Integer, Map<String, StoreStream>> rooms = new HashMap<Integer, Map<String, StoreStream>>();
     // 랭킹 처리를 위해 추가한 Map입니다
     private static final Map<Integer, Map<String, Integer>> roomScores = new HashMap<>(); // 방 별 사용자 점수 저장
+    private static final Map<String, ObjectOutputStream> clientOutputStreams = new HashMap<>();
+    private static final Map<Integer,Map<String,Socket>> roomClients = new HashMap<>();
+
+    private static Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(DB_URL);
+    }
+    // 클라이언트 출력 스트림 저장
+    public static synchronized void addClientOutputStream(String userId, ObjectOutputStream out) {
+        clientOutputStreams.put(userId, out);
+    }
+
+    // 클라이언트 출력 스트림 가져오기
+    public static synchronized ObjectOutputStream getClientOutPutStream(String userId) {
+        return clientOutputStreams.get(userId);
+    }
+
+    // 클라이언트 출력 스트림 제거
+    public static synchronized void removeClientOutputStream(String userId) {
+        clientOutputStreams.remove(userId);
+    }
 
     public static synchronized void addClientToRoom(int roomId, String userId, StoreStream storeStream) {
         rooms.computeIfAbsent(roomId, k -> new HashMap<>()).put(userId, storeStream);
@@ -48,6 +74,25 @@ private static final Map<Integer, Map<String, StoreStream>> rooms = new HashMap<
                         e.printStackTrace();
                     }
                 }
+            }
+        }
+    }
+
+    //스피드퀴즈에서 다음 문제 넘어갈 때 사용하기 위해 작성
+    public static synchronized void broadcastToAll(int roomId, Message message) {
+        Map<String, StoreStream> room = rooms.get(roomId);
+        if (room != null) {
+            for (Map.Entry<String, StoreStream> entry : room.entrySet()) {
+                StoreStream storeStream = entry.getValue();
+
+                try {
+                    ObjectOutputStream out = storeStream.getOut();
+                    out.writeObject(message);
+                    out.flush();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
             }
         }
     }
@@ -100,6 +145,24 @@ private static final Map<Integer, Map<String, StoreStream>> rooms = new HashMap<
         Map<String, StoreStream> room = rooms.get(roomId);
         return (room != null) ? room.size() : 0;
     }
-
-
+    
+    // 방의 모든 사용자 ID 가져오기
+    public static synchronized List<String> getUserIdsInRoom(int roomId) {
+        Map<String, Socket> clients = roomClients.get(roomId);
+        //clients가 없으면 빈 배열 반환
+        return (clients != null) ? new ArrayList<>(clients.keySet()) : new ArrayList<>(); 
+    }
+    public static String getRoomMaster(int roomId) {
+        try (Connection conn = getConnection();
+             PreparedStatement stmt = conn.prepareStatement("SELECT master_id FROM Room WHERE id = ?")) {
+            stmt.setInt(1, roomId);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getString("master_id");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
 }

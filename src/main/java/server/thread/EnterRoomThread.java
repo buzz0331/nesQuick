@@ -6,10 +6,9 @@ import server.StoreStream;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.sql.*;
+import java.net.Socket;
 
 public class EnterRoomThread extends Thread {
-    private static final String DB_URL = "jdbc:sqlite:quiz_game.db";
     private final Message message;
     private final ObjectOutputStream out;
     private final StoreStream storeStream;
@@ -25,31 +24,22 @@ public class EnterRoomThread extends Thread {
         int roomId = Integer.parseInt(message.getData());
         String userId = message.getUserId();
 
-        try(Connection conn = DriverManager.getConnection(DB_URL)){
+        try {
+            //방장 정보 알아오기(들어가는 유저가 방장인지 아닌지 비교)
+            String masterId = QuizServer.getRoomMaster(roomId);
             // 방에 클라이언트 추가
             QuizServer.addClientToRoom(roomId, userId, storeStream);
 
-            String query = "SELECT name, capacity, master_id FROM Room WHERE id = ?";
-            try (PreparedStatement stmt = conn.prepareStatement(query)) {
-                stmt.setInt(1, roomId);
-                ResultSet rs = stmt.executeQuery();
-
-                if (rs.next()) {
-                    // 방 입장 성공 시 방 정보로 응답 메시지 구성
-                    Message response = new Message("enterRoomSuccess")
-                            .setData(String.valueOf(QuizServer.getRoomUserCount(roomId)))
-                            .setRoomId(roomId)
-                            .setRoomName(rs.getString("name"))
-                            .setCapacity(rs.getInt("capacity"))
-                            .setRoomMaster(rs.getString("master_id"));
-                    out.writeObject(response);
-                } else {
-                    // 방을 찾을 수 없는 경우
-                    Message errorResponse = new Message("enterRoomFailure")
-                            .setData("Room not found");
-                    out.writeObject(errorResponse);
-                }
-            }
+            System.out.println(message.getRoomMaster());
+            // 방 입장 성공 메시지 전송
+            Message response = new Message("enterRoomSuccess")
+                    .setRoomId(roomId)
+                    .setUserId(userId)
+                    .setData(String.valueOf(QuizServer.getRoomUserCount(roomId)))
+                    .setRoomMaster(masterId);
+            out.writeObject(response);
+            out.flush();
+            System.out.println("EnterRoomThread.run: "+ userId);
 
             // 다른 사용자에게 입장 알림 메시지 브로드캐스트
             Message broadcastMessage = new Message("userEnter")
@@ -59,8 +49,7 @@ public class EnterRoomThread extends Thread {
             System.out.println("EnterRoomThread.run"+ userId);
             QuizServer.broadcast(roomId, broadcastMessage);
 
-
-        } catch (IOException | SQLException e) {
+        } catch (IOException e) {
             e.printStackTrace();
             try {
                 // 방 입장 실패 시 실패 메시지 전송

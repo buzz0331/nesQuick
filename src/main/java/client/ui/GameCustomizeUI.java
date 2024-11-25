@@ -2,7 +2,7 @@ package client.ui;
 
 import client.thread.MessageReceiver;
 import client.ui.customize.CooperationCustomizeUI;
-import client.ui.customize.SpeedQuizCustomizeUI;
+import client.ui.customize.speedCustomizeUI.SpeedCustomizeUI;
 import client.ui.customize.versusCustomizeUI.VersusCustomizeUI;
 import client.ui.icon.ArrowIcon;
 
@@ -10,7 +10,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
 
@@ -84,7 +83,7 @@ public class GameCustomizeUI {
         speedQuizButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                new SpeedQuizCustomizeUI(socket, out, loginUserId, receiver);
+                new SpeedCustomizeUI(socket, out, loginUserId, receiver);
             }
         });
 
