@@ -150,40 +150,41 @@ public class SpeedQuizUI {
             chatArea.append("Waiting for the host to start the game...\n");
 
             // 별도의 스레드에서 서버 메시지 수신 처리
-            receiverThread = new Thread(() -> {
-                while (!Thread.currentThread().isInterrupted()) {
-                    try {
-                        // 서버로부터 메시지 수신
-                        Message message = receiver.takeMessage();
-
-                        if ("gameStart".equals(message.getType())) {
-                            // 게임 시작 관련 데이터 수신
-                            list = parseQuizList(message.getData());
-
-                            // 대기 화면 종료 및 게임 시작 화면으로 전환
-                            SwingUtilities.invokeLater(() -> {
-                                stopThread();
-                                frame.dispose();
-                                new StartSpeedQuiz(socket, out, roomId, userId, list, receiver);
-                            });
-                            break; // 게임 시작 메시지 처리 후 루프 종료
-                        }
-                    } catch (InterruptedException ex) {
-                        Thread.currentThread().interrupt(); // 스레드 종료 신호 처리
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        break; // 예외 발생 시 루프 종료
-                    }
-                }
-            });
-            receiverThread.start();
+//            receiverThread = new Thread(() -> {
+//                while (!Thread.currentThread().isInterrupted()) {
+//                    try {
+//                        // 서버로부터 메시지 수신
+//                        Message message = receiver.takeMessage();
+//
+//                        if ("gameStart".equals(message.getType())) {
+//                            // 게임 시작 관련 데이터 수신
+//                            list = parseQuizList(message.getData());
+//
+//                            // 대기 화면 종료 및 게임 시작 화면으로 전환
+//                            SwingUtilities.invokeLater(() -> {
+//                                stopThread();
+//                                frame.dispose();
+//                                new StartSpeedQuiz(socket, out, roomId, userId, list, receiver);
+//                            });
+//                            break; // 게임 시작 메시지 처리 후 루프 종료
+//                        }
+//                    } catch (InterruptedException ex) {
+//                        Thread.currentThread().interrupt(); // 스레드 종료 신호 처리
+//                    } catch (Exception e) {
+//                        e.printStackTrace();
+//                        break; // 예외 발생 시 루프 종료
+//                    }
+//                }
+//            });
+//            receiverThread.start();
             // 뒤로가기 버튼 동작
-            backButton.addActionListener(e -> {
-                receiverThread.interrupt();
-                outRoom(roomId);
-                frame.dispose();
-                new RoomListUI(socket, out, "Speed Mode", userId, receiver);
-            });
+//            backButton.addActionListener(e -> {
+//                stopThread();
+////                receiverThread.interrupt();
+//                outRoom(roomId);
+//                frame.dispose();
+//                new RoomListUI(socket, out, "Speed Mode", userId, receiver);
+//            });
         }
 
         frame.setVisible(true);
@@ -197,6 +198,7 @@ public class SpeedQuizUI {
 //            } catch (InterruptedException ex) {
 //                throw new RuntimeException(ex);
 //            }
+            outRoom(roomId);
             frame.dispose();
             new RoomListUI(socket, out, "Speed Quiz Mode", userId, receiver);
         });
