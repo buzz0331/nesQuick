@@ -1,11 +1,13 @@
 package server.thread;
 
 import protocol.Message;
+import server.QuizServer;
 import server.StoreStream;
 import server.thread.versusThread.FetchVersusQuizListThread;
 import server.thread.versusThread.FetchVersusQuizSetsThread;
 import server.thread.versusThread.FetchVersusRankingThread;
 import server.thread.versusThread.SendVersusCustomQuizThread;
+import server.thread.cooperationThread.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -55,6 +57,12 @@ public class ClientHandler implements Runnable {
                     new FetchVersusRankingThread(message,out).start();
                 } else if("sendVersusCustomQuiz".equals(message.getType())){
                     new SendVersusCustomQuizThread(message,out).start();
+                } else if ("fetchCooperationQuizSets".equals(message.getType())){
+                    new FetchCooperationQuizSetsThread(message,out).start();
+                } else if ("fetchCooperationQuizList".equals(message.getType())){
+                    new FetchCooperationQuizListThread(message,out).start();
+                } else if("sendCooperationCustomQuiz".equals(message.getType())){
+                    new SendCooperationCustomQuizThread(message,out).start();
                 }
             }
         } catch (IOException | ClassNotFoundException e) {
