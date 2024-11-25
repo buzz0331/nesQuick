@@ -101,8 +101,4 @@ private static final Map<Integer, Map<String, StoreStream>> rooms = new HashMap<
         return (room != null) ? room.size() : 0;
     }
 
-
-    public static String getRoomMaster(int roomId) {
-        return null;
-    }
 }
