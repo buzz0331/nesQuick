@@ -20,6 +20,7 @@ import java.util.Map;
 public class RoomListUI {
     private Socket socket;
     private ObjectOutputStream out;
+    private ObjectInputStream in;
     private String gameMode;
     private String userId;
     private Map<Integer, String> roomMap;
@@ -124,7 +125,7 @@ public class RoomListUI {
                 switch (gameMode) {
                     case "Speed Quiz Mode":
                         frame.dispose();
-                        new SpeedQuizUI(socket, out, roomId, userId, masterId, receiver, userCount);
+                        new SpeedQuizUI(socket, out, roomId, userId, masterId, receiver, userCount,gameMode);
                         break;
                     case "Versus Mode":
                         frame.dispose();

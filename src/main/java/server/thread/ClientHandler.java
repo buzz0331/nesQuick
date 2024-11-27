@@ -3,16 +3,20 @@ package server.thread;
 import protocol.Message;
 import server.QuizServer;
 import server.StoreStream;
+import server.thread.speedThread.FetchSpeedQuizListThread;
+import server.thread.speedThread.FetchSpeedQuizSetsThread;
+import server.thread.speedThread.FetchSpeedRankingThread;
+import server.thread.speedThread.SendSpeedCustomQuizThread;
 import server.thread.versusThread.FetchVersusQuizListThread;
 import server.thread.versusThread.FetchVersusQuizSetsThread;
 import server.thread.versusThread.FetchVersusRankingThread;
 import server.thread.versusThread.SendVersusCustomQuizThread;
-import server.thread.cooperationThread.*;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.List;
 
 public class ClientHandler implements Runnable {
     private ObjectOutputStream out;
@@ -57,12 +61,19 @@ public class ClientHandler implements Runnable {
                     new FetchVersusRankingThread(message,out).start();
                 } else if("sendVersusCustomQuiz".equals(message.getType())){
                     new SendVersusCustomQuizThread(message,out).start();
-                } else if ("fetchCooperationQuizSets".equals(message.getType())){
-                    new FetchCooperationQuizSetsThread(message,out).start();
-                } else if ("fetchCooperationQuizList".equals(message.getType())){
-                    new FetchCooperationQuizListThread(message,out).start();
-                } else if("sendCooperationCustomQuiz".equals(message.getType())){
-                    new SendCooperationCustomQuizThread(message,out).start();
+                }  else if ("fetchSpeedQuizSets".equals(message.getType())){
+                    new FetchSpeedQuizSetsThread(message,out).start();
+                } else if ("fetchSpeedQuizList".equals(message.getType())){
+                    new FetchSpeedQuizListThread(message,out).start();
+                } else if("fetchSpeedRanking".equals(message.getType())){
+                    new FetchSpeedRankingThread(message,out).start();
+                } else if("sendSpeedCustomQuiz".equals(message.getType())){
+                    new SendSpeedCustomQuizThread(message,out).start();
+                } else if("nextSpeedQuiz".equals(message.getType())){
+                    Message response = new Message("toNextSpeedQuiz")
+                            .setRoomId(message.getRoomId())
+                            .setData(message.getData());
+                    QuizServer.broadcastToAll(message.getRoomId(), response);
                 }
             }
         } catch (IOException | ClassNotFoundException e) {
