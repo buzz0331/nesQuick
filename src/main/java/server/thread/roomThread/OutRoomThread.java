@@ -1,11 +1,10 @@
-package server.thread;
+package server.thread.roomThread;
 
 import protocol.Message;
 import server.QuizServer;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.net.Socket;
 
 public class OutRoomThread extends Thread{
     private final Message message;
