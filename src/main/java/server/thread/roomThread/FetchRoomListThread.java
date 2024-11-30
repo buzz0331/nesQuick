@@ -1,4 +1,4 @@
-package server.thread;
+package server.thread.roomThread;
 
 import protocol.Message;
 

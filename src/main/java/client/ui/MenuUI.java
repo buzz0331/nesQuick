@@ -22,13 +22,13 @@ public class MenuUI {
         panel.setBackground(new Color(255, 247, 153));
         frame.add(panel);
 
-        // 뒤로가기 버튼
-        JButton backButton = new JButton(new ArrowIcon(20, Color.BLACK));
-        backButton.setBounds(10, 10, 30, 30);
-        backButton.setBorderPainted(false);
-        backButton.setContentAreaFilled(false);
-        backButton.setFocusPainted(false);
-        panel.add(backButton);
+//        // 뒤로가기 버튼
+//        JButton backButton = new JButton(new ArrowIcon(20, Color.BLACK));
+//        backButton.setBounds(10, 10, 30, 30);
+//        backButton.setBorderPainted(false);
+//        backButton.setContentAreaFilled(false);
+//        backButton.setFocusPainted(false);
+//        panel.add(backButton);
 
         // 로고
         JLabel logoLabel = new JLabel(new ImageIcon("./src/main/java/client/ui/nesquick_logo.png"));

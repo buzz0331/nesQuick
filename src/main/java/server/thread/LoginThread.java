@@ -10,7 +10,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-class LoginThread extends Thread {
+public class LoginThread extends Thread {
     private static final String DB_URL = "jdbc:sqlite:quiz_game.db";
     private Message message;
     private ObjectOutputStream out;

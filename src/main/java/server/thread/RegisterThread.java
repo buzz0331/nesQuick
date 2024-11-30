@@ -9,7 +9,7 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-class RegisterThread extends Thread {
+public class RegisterThread extends Thread {
     private static final String DB_URL = "jdbc:sqlite:quiz_game.db";
     private Message message;
     private ObjectOutputStream out;

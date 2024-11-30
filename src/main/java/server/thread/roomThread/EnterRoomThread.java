@@ -1,13 +1,11 @@
-package server.thread;
+package server.thread.roomThread;
 
-import DB.domain.Quiz;
 import protocol.Message;
 import server.QuizServer;
 import server.StoreStream;
 
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.net.Socket;
 
 public class EnterRoomThread extends Thread {
     private final Message message;
