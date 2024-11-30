@@ -1,7 +1,7 @@
 package server;
 
 import protocol.Message;
-import server.thread.ClientHandler;
+import server.handler.ClientHandler;
 
 import java.io.*;
 import java.net.*;
