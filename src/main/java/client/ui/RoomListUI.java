@@ -1,7 +1,7 @@
 package client.ui;
 
 import client.thread.MessageReceiver;
-import client.ui.gamemode.CooperationUI;
+import client.ui.gamemode.cooperationUI.CooperationUI;
 import client.ui.gamemode.speedQuiz.SpeedQuizUI;
 import client.ui.gamemode.versusUI.VersusUI;
 import client.ui.icon.ArrowIcon;
@@ -133,7 +133,7 @@ public class RoomListUI {
                         break;
                     case "Cooperation Mode":
                         frame.dispose();
-                        new CooperationUI(socket, out, roomId, userId, receiver);
+                        new CooperationUI(socket, out, roomId, userId, masterId, receiver, gameMode, userCount);
                         break;
                     default:
                         JOptionPane.showMessageDialog(null, "알 수 없는 게임 모드입니다.");
