@@ -3,6 +3,7 @@ package client.ui.gamemode.cooperationUI;
 import client.thread.MessageReceiver;
 import client.ui.MenuUI;
 import client.ui.RoomListUI;
+import client.ui.gamemode.speedQuiz.SpeedRankingUI;
 import client.ui.icon.ArrowIcon;
 import protocol.Message;
 
@@ -24,11 +25,19 @@ public class CooperationStartUI {
     private final String userId;
     private final int userNumber;
     private List<Quiz> quizList;
-    private int score = 0;
+//    private int score = 0;
     private MessageReceiver receiver;
+    private int currentIndex = 0;
+
+
+    private JPanel panel;
+    private JFrame frame;
+    private JLabel logoLabel;
+    private JButton backButton;
+
 
     public CooperationStartUI(Socket socket, ObjectOutputStream out, int roomId, String userId, int userNumber,
-            List<Quiz> quizList, MessageReceiver receiver) {
+                              List<Quiz> quizList, MessageReceiver receiver) {
         this.socket = socket;
         this.out = out;
         this.roomId = roomId;
@@ -37,22 +46,22 @@ public class CooperationStartUI {
         this.quizList = quizList;
         this.receiver = receiver;
 
-        JFrame frame = new JFrame("Cooperation Start");
+        this.frame = new JFrame("Cooperation Start");
         frame.setSize(800, 600);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        JPanel panel = new JPanel();
+        this.panel = new JPanel();
         panel.setLayout(null);
         panel.setBackground(new Color(255, 247, 153));
         frame.add(panel);
 
         // 로고
-        JLabel logoLabel = new JLabel(new ImageIcon("./src/main/java/client/ui/nesquick_logo.png"));
+        this.logoLabel = new JLabel(new ImageIcon("./src/main/java/client/ui/nesquick_logo.png"));
         logoLabel.setBounds(530, 10, 250, 100);
         panel.add(logoLabel);
 
         // 뒤로가기 버튼
-        JButton backButton = new JButton(new ArrowIcon(20, Color.BLACK));
+        this.backButton = new JButton(new ArrowIcon(20, Color.BLACK));
         backButton.setBounds(10, 10, 30, 30);
         backButton.setBorderPainted(false);
         backButton.setContentAreaFilled(false);
@@ -60,9 +69,7 @@ public class CooperationStartUI {
         panel.add(backButton);
 
         frame.setVisible(true);
-
-        // 문제 진행을 위한 초기 인덱스
-        final int[] currentIndex = { 0 };
+        listenForMessages();
 
         // 문제 표시 메서드
         displayQuiz(panel, frame, logoLabel, backButton, currentIndex);
@@ -76,10 +83,10 @@ public class CooperationStartUI {
     }
 
     // 문제 표시 메서드
-    private void displayQuiz(JPanel panel, JFrame frame, JLabel logoLabel, JButton backButton, int[] currentIndex) {
+    private void displayQuiz(JPanel panel, JFrame frame, JLabel logoLabel, JButton backButton, int index) {
         panel.removeAll();
 
-        Quiz currentQuiz = quizList.get(currentIndex[0]);
+        Quiz currentQuiz = quizList.get(index);
         int timeLimit = currentQuiz.getTime();
 
         // 이미지 경로를 확인하고 pics 내부 상대 경로로 처리
@@ -157,30 +164,20 @@ public class CooperationStartUI {
                 timer.stop(); // 타이머 중지
                 String userAnswer = ansField.getText();
                 if (userAnswer.equals(currentQuiz.getAnswer())) {
-                    score++;
-                    JOptionPane.showMessageDialog(frame, "정답입니다! 현재 점수: " + score);
+//                    score++;
+                    JOptionPane.showMessageDialog(frame, "정답입니다!");
                     try{
                         Message nextQuizMessage = new Message("nextCooperationQuiz")
                                 .setRoomId(roomId)
                                 .setUserId(userId)
-                                .setData(String.valueOf(currentIndex[0]++));
+                                .setData(String.valueOf(currentIndex+1));
                         out.writeObject(nextQuizMessage);
                         out.flush();
                     } catch (IOException ex){
                         ex.printStackTrace();
                     }
                 } else {
-                    JOptionPane.showMessageDialog(frame, "오답입니다. 현재 점수: " + score);
-                }
-
-                // 다음 문제로 이동
-                currentIndex[0]++;
-                if (currentIndex[0] < quizList.size()) {
-                    displayQuiz(panel, frame, logoLabel, backButton, currentIndex);
-                } else {
-                    JOptionPane.showMessageDialog(frame, "퀴즈가 종료되었습니다!\n최종 점수: " + score);
-                    frame.dispose();
-                    new MenuUI(socket, out, userId, receiver);
+                    JOptionPane.showMessageDialog(frame, "오답입니다.");
                 }
             }
         });
@@ -194,11 +191,11 @@ public class CooperationStartUI {
                 timer.stop();
                 JOptionPane.showMessageDialog(frame, "시간 초과! 오답 처리됩니다.");
                 // 다음 문제로 이동
-                currentIndex[0]++;
-                if (currentIndex[0] < quizList.size()) {
+                currentIndex++;
+                if (currentIndex < quizList.size()) {
                     displayQuiz(panel, frame, logoLabel, backButton, currentIndex);
                 } else {
-                    JOptionPane.showMessageDialog(frame, "퀴즈가 종료되었습니다!\n최종 점수: " + score);
+                    JOptionPane.showMessageDialog(frame, "퀴즈가 종료되었습니다!");
                     frame.dispose();
                     new MenuUI(socket, out, userId, receiver);
                 }
@@ -207,6 +204,48 @@ public class CooperationStartUI {
 
         // 타이머 시작
         timer.start();
+    }
+
+    private void sendMessage(String messageContent) {
+        try {
+            Message message = new Message("chat")
+                    .setUserId(userId)
+                    .setData(messageContent)
+                    .setRoomId(roomId);
+            out.writeObject(message);
+            out.flush();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void listenForMessages() {
+        Thread messageThread = new Thread(() -> {
+            try {
+                while (true) {
+                    Message message = receiver.takeMessage();
+                    if ("toNextCooperationQuiz".equals(message.getType()) && message.getRoomId() == roomId) {
+                        int nextIndex = Integer.parseInt(message.getData());
+                        if (nextIndex < quizList.size()) {
+                            SwingUtilities.invokeLater(() -> {
+                                currentIndex = nextIndex;
+                                displayQuiz(panel, frame, logoLabel, backButton, currentIndex);
+                            });
+                        } else {
+                            JOptionPane.showMessageDialog(frame, "퀴즈가 종료되었습니다!");
+                            frame.dispose();
+                            new MenuUI(socket, out, userId, receiver);
+                        }
+                    }
+//                    else if ("chat".equals(message.getType()) && message.getRoomId() == roomId) {
+//                        chatArea.append(message.getUserId() + ": " + message.getData() + "\n");
+//                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+        messageThread.start();
     }
 
 }

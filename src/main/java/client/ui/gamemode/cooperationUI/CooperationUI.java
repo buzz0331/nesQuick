@@ -17,7 +17,7 @@ public class CooperationUI {
     private final ObjectOutputStream out;
     private final int roomId;
     private final String userId;
-    private final String masterId;
+    private Boolean isMaster;
     private List<Quiz> list;
     private MessageReceiver receiver;
     private String gameMode;
@@ -28,15 +28,16 @@ public class CooperationUI {
     private final JTextArea chatArea;
     private Thread messageThread;
     private JFrame frame;
+    private DefaultListModel<String> listModel;
+    private JList<String> quizSetList;
 
-    public CooperationUI(Socket socket, ObjectOutputStream out, int roomId, String userId, String masterId,
-            MessageReceiver receiver, String gameMode, int userCount) {
+    public CooperationUI(Socket socket, ObjectOutputStream out, int roomId, String userId, String masterId, MessageReceiver receiver, String gameMode, int userCount) {
         this.socket = socket;
         this.out = out;
         this.roomId = roomId;
         this.userId = userId;
+        this.isMaster = userId.equals(masterId);
         this.receiver = receiver;
-        this.masterId = masterId;
         this.gameMode = gameMode;
         this.userCount = userCount;
 
@@ -54,6 +55,11 @@ public class CooperationUI {
         logoLabel.setBounds(530, 10, 250, 100);
         panel.add(logoLabel);
 
+        // 사용자 수 라벨
+        userCountLabel = new JLabel("현재 사용자: " + userCount + "명");
+        userCountLabel.setBounds(50, 50, 200, 30);
+        panel.add(userCountLabel);
+
         // 뒤로가기 버튼
         JButton backButton = new JButton(new ArrowIcon(20, Color.BLACK));
         backButton.setBounds(10, 10, 30, 30);
@@ -61,69 +67,6 @@ public class CooperationUI {
         backButton.setContentAreaFilled(false);
         backButton.setFocusPainted(false);
         panel.add(backButton);
-
-        // 사용자 수 라벨
-        userCountLabel = new JLabel("현재 사용자: " + userCount + "명");
-        userCountLabel.setBounds(50, 50, 200, 30);
-        panel.add(userCountLabel);
-
-        if (userId.equals(masterId)) {
-            // 게임 시작 버튼
-            JButton startButton = new JButton("Game Start");
-            startButton.setBounds(10, 70, 150, 30);
-            startButton.setEnabled(true);
-            panel.add(startButton);
-
-            // 퀴즈 set 리스트 라벨
-            JLabel titleLabel = new JLabel("Quiz set 리스트");
-            titleLabel.setBounds(200, 50, 200, 30);
-            titleLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 18));
-            panel.add(titleLabel);
-
-            // 서버로부터 퀴즈 set들 가져오기
-            List<String> quizSets = fetchCooperationQuizSetsFromServer();
-
-            // 퀴즈 set 리스트 표시
-            DefaultListModel<String> listModel = new DefaultListModel<>();
-            for (String s : quizSets) {
-                listModel.addElement(s);
-            }
-            JList<String> quizSetList = new JList<>(listModel);
-            quizSetList.setBounds(50, 100, 500, 200);
-            quizSetList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-            panel.add(quizSetList);
-
-            // 게임 시작 버튼 동작
-            startButton.addActionListener(e -> {
-                // if (userCount != 4) {
-                // JOptionPane.showMessageDialog(frame, "게임을 시작하려면 사용자 수가 정확히 4명이어야
-                // 합니다."+userCount);
-                // return;
-                // }
-
-                // 비동기로 퀴즈 데이터를 가져오는 작업 실행
-                new Thread(() -> {
-                    list = fetchCooperationQuizListFromServer(quizSetList.getSelectedValue());
-                    SwingUtilities.invokeLater(() -> {
-                        stopThread();
-                        frame.dispose();
-                        if (userId.equals(masterId))
-                            new CooperationStartUI(socket, out, roomId, userId, 1, list, receiver);
-                        else
-                            new CooperationStartUI(socket, out, roomId, userId, 0, list, receiver);
-                    });
-                }).start();
-            });
-
-            // 뒤로가기 버튼 동작
-            backButton.addActionListener(e -> {
-                stopThread();
-                outRoom(roomId);
-                frame.dispose();
-                new RoomListUI(socket, out, "Cooperation Mode", userId, receiver);
-            });
-
-        }
 
         // 채팅 영역
         chatArea = new JTextArea();
@@ -142,20 +85,67 @@ public class CooperationUI {
         sendButton.setBounds(660, 470, 80, 30);
         panel.add(sendButton);
 
-        frame.setVisible(true);
+        JLabel titleLabel = new JLabel("Quiz set 리스트");
+        titleLabel.setBounds(200, 50, 200, 30);
+        titleLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 18));
+        titleLabel.setVisible(false);  // 초기에는 숨김
+        panel.add(titleLabel);
 
-        // 방장이 아닌 경우
-        if (!userId.equals(masterId)) {
-            chatArea.append("Waiting for the host to start the game...\n");
+        // 퀴즈 set 리스트 초기화
+        listModel = new DefaultListModel<>();
+        quizSetList = new JList<>(listModel);
+        quizSetList.setBounds(50, 100, 500, 200);
+        quizSetList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        quizSetList.setVisible(false);  // 초기에 숨김
+        panel.add(quizSetList);
 
-            // 뒤로가기 버튼 동작
-            backButton.addActionListener(e -> {
-                stopThread();
-                outRoom(roomId);
-                frame.dispose();
-                new RoomListUI(socket, out, "Cooperation Mode", userId, receiver);
+        //방장일 경우에 시작 버튼 보이도록
+        if (isMaster) {
+            JButton startButton = new JButton("Quiz Sets");
+            startButton.setBounds(350, 530, 100, 30);  // 위치와 크기 설정
+            startButton.setBackground(new Color(255, 223, 85));
+            startButton.setForeground(Color.BLACK);
+            startButton.setFocusPainted(false);
+            panel.add(startButton);
+
+            startButton.addActionListener(e -> {
+                messageField.setVisible(false);
+                chatScroll.setVisible(false);
+                sendButton.setVisible(false);
+
+                // 시작 버튼 클릭시에만 퀴즈 세트 관련 UI 표시
+                titleLabel.setVisible(true);
+                quizSetList.setVisible(true);
+                listModel.clear();  // 기존 항목 제거
+                fetchCooperationQuizSetsFromServer();  // 서버에 요청만 보냄
+
+                //시작 버튼을 게임 시작 버튼으로 변경
+                startButton.setText("Game Start");
+                startButton.removeActionListener(startButton.getActionListeners()[0]); //이전 ActionListner 제거
+                startButton.addActionListener(event -> {
+                    String selectedQuizSet = quizSetList.getSelectedValue();
+                    if (selectedQuizSet != null) {
+                        System.out.println("선택된 퀴즈 세트: " + selectedQuizSet);
+                        fetchCooperationQuizListFromServer(selectedQuizSet);
+                    } else {
+                        JOptionPane.showMessageDialog(frame, "퀴즈 세트를 선택해주세요.");
+                    }
+                });
             });
         }
+        if(!isMaster){
+            chatArea.append("Waiting for the host to start the game...\n");
+        }
+
+        frame.setVisible(true);
+
+        // 뒤로가기 버튼 동작
+        backButton.addActionListener(e -> {
+            stopThread();
+            outRoom(roomId);
+            frame.dispose();
+            new RoomListUI(socket, out, "Cooperation Mode", userId, receiver);
+        });
 
         // 메시지 전송 동작
         sendButton.addActionListener(e -> {
@@ -196,12 +186,6 @@ public class CooperationUI {
             out.writeObject(request);
             out.flush();
 
-            Message response = receiver.takeMessage();
-            String data = response.getData();
-            String quizArr[] = data.split("\n");
-            for (int i = 0; i < quizArr.length; i++) {
-                quizSetList.add(quizArr[i]);
-            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -219,9 +203,6 @@ public class CooperationUI {
             out.writeObject(request);
             out.flush();
 
-            Message response = receiver.takeMessage();
-            quizList = parseQuizList(response.getData());
-
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -237,7 +218,8 @@ public class CooperationUI {
                     Integer.parseInt(tmp[0]),
                     Integer.parseInt(tmp[1]),
                     tmp[2],
-                    tmp[3]));
+                    tmp[3]
+            ));
         }
         return quizList;
     }
@@ -266,6 +248,26 @@ public class CooperationUI {
                     chatArea.append(message.getData() + "\n");
                     userCount++;
                     updateUserCountLabel();
+                } else if ("fetchCooperationQuizSetsResponse".equals(message.getType())) {
+                    String data = message.getData();
+                    if (data != null) {
+                        System.out.println("데이터 길이: " + data.length());
+                        System.out.println("실제 데이터 내용: [" + data + "]");
+                    }
+
+                    if (data == null || data.isEmpty()) {
+                        System.out.println("데이터가 비어있습니다");
+                        continue;
+                    }
+                    SwingUtilities.invokeLater(() -> {
+                        String[] quizArr = data.split("\n");
+                        for (String quiz : quizArr) {
+                            quiz=quiz.trim();
+                            listModel.addElement(quiz);
+                            System.out.println("추가된 퀴즈 세트: " + quiz);
+                        }
+                        System.out.println("총 퀴즈 세트 수: " + listModel.size());
+                    });
                 } else if ("gameStart".equals(message.getType())) {
                     // 게임 시작 관련 데이터 수신
                     list = parseQuizList(message.getData());
@@ -274,10 +276,10 @@ public class CooperationUI {
                     SwingUtilities.invokeLater(() -> {
                         stopThread();
                         frame.dispose();
-                        if (userId.equals(masterId))
-                            new CooperationStartUI(socket, out, roomId, userId, 1, list, receiver);
-                        else
+                        if(isMaster)
                             new CooperationStartUI(socket, out, roomId, userId, 0, list, receiver);
+                        else
+                            new CooperationStartUI(socket, out, roomId, userId, 1, list, receiver);
                     });
                     break; // 게임 시작 메시지 처리 후 루프 종료
                 }
@@ -299,5 +301,5 @@ public class CooperationUI {
     private void updateUserCountLabel() {
         userCountLabel.setText("현재 사용자: " + userCount + "명");
     }
-
 }
+

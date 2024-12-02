@@ -183,4 +183,12 @@ public class VersusStartUI {
         }
         return ranking;
     }
+
+//    private void listenForMessages(){
+//        try{
+//            while (running){
+//                Message message =receiver.takeMessage();
+//            }
+//        }
+//    }
 }

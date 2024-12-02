@@ -1,7 +1,7 @@
 package client.ui;
 
 import client.thread.MessageReceiver;
-import client.ui.customize.CooperationCustomizeUI;
+import client.ui.customize.cooperationCustomizeUI.CooperationCustomizeUI;
 import client.ui.customize.speedCustomizeUI.SpeedCustomizeUI;
 import client.ui.customize.versusCustomizeUI.VersusCustomizeUI;
 import client.ui.icon.ArrowIcon;
