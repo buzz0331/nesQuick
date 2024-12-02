@@ -33,7 +33,7 @@ public class RoomListUI {
         this.roomMap = new HashMap<>();
 
         JFrame frame = new JFrame("Room List - " + gameMode);
-        frame.setSize(600, 500);
+        frame.setSize(640, 500);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JPanel panel = new JPanel();
@@ -51,7 +51,7 @@ public class RoomListUI {
 
         // 로고
         JLabel logoLabel = new JLabel(new ImageIcon("./src/main/java/client/ui/nesquick_logo.png"));
-        logoLabel.setBounds(500, 10, 80, 80);
+        logoLabel.setBounds(400, 10, 250, 100);
         panel.add(logoLabel);
 
         // 방 리스트 라벨

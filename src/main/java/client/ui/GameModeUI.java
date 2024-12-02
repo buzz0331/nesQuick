@@ -69,7 +69,7 @@ public class GameModeUI {
         backButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 frame.dispose();
-                new LoginUI(socket, out, receiver);  // LoginUI로 돌아감
+                new MenuUI(socket, out, loginUserId ,receiver);  // LoginUI로 돌아감
             }
         });
 

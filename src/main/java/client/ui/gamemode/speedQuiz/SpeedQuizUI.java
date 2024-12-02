@@ -62,7 +62,7 @@ public class SpeedQuizUI {
 
         // 로고
         JLabel logoLabel = new JLabel(new ImageIcon("./src/main/java/client/ui/nesquick_logo.png"));
-        logoLabel.setBounds(700, 10, 80, 80);
+        logoLabel.setBounds(530, 10, 250, 100);
         panel.add(logoLabel);
 
         // 사용자 수 라벨
@@ -83,7 +83,7 @@ public class SpeedQuizUI {
         chatArea = new JTextArea();
         chatArea.setEditable(false);
         JScrollPane chatScroll = new JScrollPane(chatArea);
-        chatScroll.setBounds(50, 100, 700, 350);
+        chatScroll.setBounds(50, 310, 700, 140);
         panel.add(chatScroll);
 
         // 메시지 입력 필드
