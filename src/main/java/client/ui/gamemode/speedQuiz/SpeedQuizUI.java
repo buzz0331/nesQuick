@@ -272,6 +272,10 @@ public class SpeedQuizUI {
                     chatArea.append(message.getData() + "\n");
                     userCount++;
                     updateUserCountLabel();
+                }else if ("userExit".equals(message.getType()) && message.getRoomId() == roomId) {
+                    chatArea.append(message.getData() + "\n");
+                    userCount--;
+                    updateUserCountLabel();
                 } else if ("fetchSpeedQuizSetsResponse".equals(message.getType())) {
                     String data = message.getData();
                     if (data != null) {
@@ -351,7 +355,14 @@ public class SpeedQuizUI {
             out.writeObject(outRequest);
 
             Message response = receiver.takeMessage();
-            System.out.println(response.getData());
+            if ("outRoomSuccess".equals(response.getType())) {
+                System.out.println(response.getData());
+            } else {
+                JOptionPane.showMessageDialog(frame, "현재 방을 나갈 수 없습니다. 다시 시도해주세요.");
+                messageThread = new Thread(this::listenForMessages);
+                messageThread.start();
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }

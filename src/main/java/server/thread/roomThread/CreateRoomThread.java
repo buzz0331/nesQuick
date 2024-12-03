@@ -28,7 +28,7 @@ public class CreateRoomThread extends Thread {
 
         try (Connection conn = DriverManager.getConnection(DB_URL);
              PreparedStatement stmt = conn.prepareStatement(
-                     "INSERT INTO Room (game_category, master_id, name, capacity, current_count) VALUES (?, ?, ?, ?, 0)")) {
+                     "INSERT INTO Room (game_category, master_id, name, capacity, current_count) VALUES (?, ?, ?, ?, 1)")) {
 
             stmt.setString(1, gameMode);
             stmt.setString(2, userId);
