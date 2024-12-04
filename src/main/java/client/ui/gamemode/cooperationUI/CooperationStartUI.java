@@ -21,9 +21,11 @@ public class CooperationStartUI {
     private final int roomId;
     private final String userId;
     private final int userNumber;
-    private List<Quiz> quizList;
-    private MessageReceiver receiver;
+    private final List<Quiz> quizList;
+    private final MessageReceiver receiver;
+
     private int currentIndex = 0;
+    private Timer currentTimer; // 현재 실행 중인 타이머를 추적하기 위한 필드
 
     private JPanel panel;
     private JFrame frame;
@@ -45,7 +47,7 @@ public class CooperationStartUI {
         this.receiver = receiver;
 
         this.frame = new JFrame("Cooperation Start");
-        frame.setSize(1200, 700); // 프레임 크기 확장
+        frame.setSize(1200, 700);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         this.panel = new JPanel();
@@ -55,7 +57,7 @@ public class CooperationStartUI {
 
         // 로고
         this.logoLabel = new JLabel(new ImageIcon("./src/main/java/client/ui/nesquick_logo.png"));
-        logoLabel.setBounds(850, 10, 250, 100); // 우측 상단으로 배치
+        logoLabel.setBounds(850, 10, 250, 100); // 우측 상단 배치
         panel.add(logoLabel);
 
         // 뒤로가기 버튼
@@ -74,7 +76,7 @@ public class CooperationStartUI {
         chatArea.setBackground(new Color(245, 245, 245));
         chatArea.setFont(new Font("Arial", Font.PLAIN, 14));
         JScrollPane chatScroll = new JScrollPane(chatArea);
-        chatScroll.setBounds(850, 150, 300, 400); // 우측에 배치
+        chatScroll.setBounds(850, 150, 300, 400); // 우측 배치
         panel.add(chatScroll);
 
         chatField = new JTextField();
@@ -105,15 +107,18 @@ public class CooperationStartUI {
                 chatArea.append(userId + ": " + message + "\n");
             }
         });
-
     }
 
     private void displayQuiz(JPanel panel, JFrame frame, JLabel logoLabel, JButton backButton, int index) {
-        // 기존 패널에서 퀴즈 관련 요소만 제거
+        if (currentTimer != null) {
+            currentTimer.stop(); // 기존 타이머 중지
+        }
+
+        // 기존 패널에서 퀴즈 관련 요소 제거
         Component[] components = panel.getComponents();
         for (Component comp : components) {
             if (!(comp instanceof JScrollPane || comp == chatField || comp == sendChatButton || comp == logoLabel || comp == backButton)) {
-                panel.remove(comp); // 채팅 UI와 고정 컴포넌트를 제외한 나머지 제거
+                panel.remove(comp);
             }
         }
 
@@ -133,10 +138,10 @@ public class CooperationStartUI {
         ImageIcon questionImageIcon = new ImageIcon(questionImagePath);
         Image questionImage = questionImageIcon.getImage().getScaledInstance(600, 400, Image.SCALE_SMOOTH);
         JLabel questionImageLabel = new JLabel(new ImageIcon(questionImage));
-        questionImageLabel.setBounds(50, 100, 600, 400); // 좌측 중앙 배치
+        questionImageLabel.setBounds(50, 100, 600, 400);
         panel.add(questionImageLabel);
 
-        // 화면 가리기
+        // 마스크 패널 추가
         JPanel maskPanelLeft = new JPanel();
         JPanel maskPanelRight = new JPanel();
 
@@ -146,16 +151,15 @@ public class CooperationStartUI {
         if (userNumber == 1) {
             maskPanelLeft.setBounds(50, 100, 300, 400);
             maskPanelRight.setBounds(350, 100, 300, 400);
-            panel.add(maskPanelRight); // 우측 절반만 표시
-            panel.setComponentZOrder(maskPanelRight, 0); // maskPanelRight를 가장 상단으로 설정
+            panel.add(maskPanelRight); // 우측 절반 가리기
+            panel.setComponentZOrder(maskPanelRight, 0); // 최상단으로 배치
         } else {
             maskPanelLeft.setBounds(50, 100, 300, 400);
             maskPanelRight.setBounds(350, 100, 300, 400);
-            panel.add(maskPanelLeft); // 좌측 절반만 표시
-            panel.setComponentZOrder(maskPanelLeft, 0); // maskPanelLeft를 가장 상단으로 설정
+            panel.add(maskPanelLeft); // 좌측 절반 가리기
+            panel.setComponentZOrder(maskPanelLeft, 0); // 최상단으로 배치
         }
 
-        // 정답 입력 및 타이머 추가
         JLabel ansLabel = new JLabel("정답: ");
         ansLabel.setBounds(50, 520, 60, 30);
         ansLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 15));
@@ -178,12 +182,12 @@ public class CooperationStartUI {
         panel.revalidate();
         panel.repaint();
 
-    // 타이머 설정
-        Timer timer = new Timer(1000, null);
+        // 타이머 설정
+        currentTimer = new Timer(1000, null);
         final int[] timeRemaining = {timeLimit};
 
         sendButton.addActionListener(e -> {
-            timer.stop();
+            currentTimer.stop();
             String userAnswer = ansField.getText();
             if (userAnswer.equals(currentQuiz.getAnswer())) {
                 JOptionPane.showMessageDialog(frame, "정답입니다!");
@@ -202,12 +206,12 @@ public class CooperationStartUI {
             }
         });
 
-        timer.addActionListener(e -> {
+        currentTimer.addActionListener(e -> {
             timeRemaining[0]--;
             timerLabel.setText("남은 시간: " + timeRemaining[0] + "초");
 
             if (timeRemaining[0] <= 0) {
-                timer.stop();
+                currentTimer.stop();
                 JOptionPane.showMessageDialog(frame, "시간 초과! 오답 처리됩니다.");
                 currentIndex++;
                 if (currentIndex < quizList.size()) {
@@ -220,10 +224,8 @@ public class CooperationStartUI {
             }
         });
 
-        timer.start();
+        currentTimer.start();
     }
-
-
 
     private void sendMessage(String messageContent) {
         try {
