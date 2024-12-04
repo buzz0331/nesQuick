@@ -9,8 +9,6 @@ import protocol.Message;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
@@ -93,21 +91,16 @@ public class RoomListUI {
         addRoomButton.setFocusPainted(false);
         panel.add(addRoomButton);
 
-        addRoomButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                frame.dispose();
-                new RoomAddUI(socket, out, gameMode, loginUserId, receiver);
-            }
+        addRoomButton.addActionListener(e -> {
+            frame.dispose();
+            new RoomAddUI(socket, out, gameMode, loginUserId, receiver);
         });
 
         frame.setVisible(true);
 
-        backButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                frame.dispose();
-                new GameModeUI(socket, out, loginUserId, receiver);
-            }
+        backButton.addActionListener(e -> {
+            frame.dispose();
+            new GameModeUI(socket, out, loginUserId, receiver);
         });
     }
 
@@ -118,6 +111,7 @@ public class RoomListUI {
                     .setData(String.valueOf(roomId));
             out.writeObject(enterRequest);
 
+            // 서버로부터 응답 받기
             Message response = receiver.takeMessage();
             if ("enterRoomSuccess".equals(response.getType())) {
                 String masterId = response.getRoomMaster();
@@ -125,7 +119,7 @@ public class RoomListUI {
                 switch (gameMode) {
                     case "Speed Quiz Mode":
                         frame.dispose();
-                        new SpeedQuizUI(socket, out, roomId, userId, masterId, receiver, userCount,gameMode);
+                        new SpeedQuizUI(socket, out, roomId, userId, masterId, receiver, userCount, gameMode);
                         break;
                     case "Versus Mode":
                         frame.dispose();
@@ -139,8 +133,10 @@ public class RoomListUI {
                         JOptionPane.showMessageDialog(null, "알 수 없는 게임 모드입니다.");
                         break;
                 }
+            } else if ("enterRoomFailure".equals(response.getType())) {
+                JOptionPane.showMessageDialog(null, response.getData()); // 방 입장 실패 메시지 표시
             } else {
-                JOptionPane.showMessageDialog(null, "방 입장 실패: " + response.getData());
+                JOptionPane.showMessageDialog(null, "알 수 없는 응답입니다.");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -177,7 +173,5 @@ public class RoomListUI {
             e.printStackTrace();
             roomMap.put(-1, "Failed to load rooms");
         }
-
     }
-
 }
