@@ -3,7 +3,6 @@ package client.ui.gamemode.cooperationUI;
 import client.thread.MessageReceiver;
 import client.ui.MenuUI;
 import client.ui.RoomListUI;
-import client.ui.gamemode.speedQuiz.SpeedRankingUI;
 import client.ui.icon.ArrowIcon;
 import protocol.Message;
 
@@ -12,10 +11,8 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.List;
 
 public class CooperationStartUI {
@@ -25,16 +22,17 @@ public class CooperationStartUI {
     private final String userId;
     private final int userNumber;
     private List<Quiz> quizList;
-//    private int score = 0;
     private MessageReceiver receiver;
     private int currentIndex = 0;
-
 
     private JPanel panel;
     private JFrame frame;
     private JLabel logoLabel;
     private JButton backButton;
 
+    private JTextArea chatArea;
+    private JTextField chatField;
+    private JButton sendChatButton;
 
     public CooperationStartUI(Socket socket, ObjectOutputStream out, int roomId, String userId, int userNumber,
                               List<Quiz> quizList, MessageReceiver receiver) {
@@ -47,7 +45,7 @@ public class CooperationStartUI {
         this.receiver = receiver;
 
         this.frame = new JFrame("Cooperation Start");
-        frame.setSize(800, 600);
+        frame.setSize(1200, 700); // 프레임 크기 확장
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         this.panel = new JPanel();
@@ -57,7 +55,7 @@ public class CooperationStartUI {
 
         // 로고
         this.logoLabel = new JLabel(new ImageIcon("./src/main/java/client/ui/nesquick_logo.png"));
-        logoLabel.setBounds(530, 10, 250, 100);
+        logoLabel.setBounds(850, 10, 250, 100); // 우측 상단으로 배치
         panel.add(logoLabel);
 
         // 뒤로가기 버튼
@@ -68,11 +66,27 @@ public class CooperationStartUI {
         backButton.setFocusPainted(false);
         panel.add(backButton);
 
+        displayQuiz(panel, frame, logoLabel, backButton, currentIndex);
+
+        // 채팅 UI
+        chatArea = new JTextArea();
+        chatArea.setEditable(false);
+        chatArea.setBackground(new Color(245, 245, 245));
+        chatArea.setFont(new Font("Arial", Font.PLAIN, 14));
+        JScrollPane chatScroll = new JScrollPane(chatArea);
+        chatScroll.setBounds(850, 150, 300, 400); // 우측에 배치
+        panel.add(chatScroll);
+
+        chatField = new JTextField();
+        chatField.setBounds(850, 570, 220, 30); // 채팅 입력 필드
+        panel.add(chatField);
+
+        sendChatButton = new JButton("Send");
+        sendChatButton.setBounds(1080, 570, 70, 30); // 채팅 전송 버튼
+        panel.add(sendChatButton);
+
         frame.setVisible(true);
         listenForMessages();
-
-        // 문제 표시 메서드
-        displayQuiz(panel, frame, logoLabel, backButton, currentIndex);
 
         // 뒤로가기 버튼 동작
         backButton.addActionListener(e -> {
@@ -80,109 +94,114 @@ public class CooperationStartUI {
             new RoomListUI(socket, out, "Cooperation Mode", userId, receiver);
         });
 
+        // 채팅 전송 버튼 동작
+        sendChatButton.addActionListener(e -> {
+            String message = chatField.getText();
+            if (!message.isEmpty()) {
+                sendMessage(message);
+                chatField.setText("");
+
+                // 전송한 메시지를 chatArea에 표시
+                chatArea.append(userId + ": " + message + "\n");
+            }
+        });
+
     }
 
-    // 문제 표시 메서드
     private void displayQuiz(JPanel panel, JFrame frame, JLabel logoLabel, JButton backButton, int index) {
-        panel.removeAll();
+        // 기존 패널에서 퀴즈 관련 요소만 제거
+        Component[] components = panel.getComponents();
+        for (Component comp : components) {
+            if (!(comp instanceof JScrollPane || comp == chatField || comp == sendChatButton || comp == logoLabel || comp == backButton)) {
+                panel.remove(comp); // 채팅 UI와 고정 컴포넌트를 제외한 나머지 제거
+            }
+        }
 
+        // 퀴즈 가져오기
         Quiz currentQuiz = quizList.get(index);
         int timeLimit = currentQuiz.getTime();
 
-        // 이미지 경로를 확인하고 pics 내부 상대 경로로 처리
-        String questionImagePath = "./pics/" + currentQuiz.getQuestion(); // 상대 경로를 기본으로 설정
+        // 문제 이미지 로드
+        String questionImagePath = "./pics/" + currentQuiz.getQuestion();
         java.io.File imageFile = new java.io.File(questionImagePath);
-
         if (!imageFile.exists()) {
             JOptionPane.showMessageDialog(frame, "이미지를 찾을 수 없습니다: " + questionImagePath, "오류",
                     JOptionPane.ERROR_MESSAGE);
             return;
         }
 
-        // 이미지 로드
         ImageIcon questionImageIcon = new ImageIcon(questionImagePath);
-        Image questionImage = questionImageIcon.getImage().getScaledInstance(500, 300, Image.SCALE_SMOOTH);
+        Image questionImage = questionImageIcon.getImage().getScaledInstance(600, 400, Image.SCALE_SMOOTH);
         JLabel questionImageLabel = new JLabel(new ImageIcon(questionImage));
-        questionImageLabel.setBounds(150, 150, 500, 300);
+        questionImageLabel.setBounds(50, 100, 600, 400); // 좌측 중앙 배치
         panel.add(questionImageLabel);
 
-        JPanel maskPanelRight = new JPanel();
-        maskPanelRight.setBounds(150 + 250, 150, 250, 300); // 우측 절반을 가림
-        maskPanelRight.setBackground(panel.getBackground());
-        panel.add(maskPanelRight);
-
+        // 화면 가리기
         JPanel maskPanelLeft = new JPanel();
-        maskPanelLeft.setBounds(150, 150, 250, 300); // 좌측 절반을 가림
+        JPanel maskPanelRight = new JPanel();
+
         maskPanelLeft.setBackground(panel.getBackground());
-        panel.add(maskPanelLeft);
-
-        // JPanel maskPanelBottom = new JPanel();
-        // maskPanelBottom.setBounds(150, 150 + 150, 500, 150); // 하단 절반을 가림
-        // maskPanelBottom.setBackground(panel.getBackground());
-        // panel.add(maskPanelBottom);
-
-        // JPanel maskPanelTop = new JPanel();
-        // maskPanelTop.setBounds(150, 150, 500, 150); // 상단 절반을 가림
-        // maskPanelTop.setBackground(panel.getBackground());
-        // panel.add(maskPanelTop);
+        maskPanelRight.setBackground(panel.getBackground());
 
         if (userNumber == 1) {
-            panel.setComponentZOrder(maskPanelRight, 0);
+            maskPanelLeft.setBounds(50, 100, 300, 400);
+            maskPanelRight.setBounds(350, 100, 300, 400);
+            panel.add(maskPanelRight); // 우측 절반만 표시
+            panel.setComponentZOrder(maskPanelRight, 0); // maskPanelRight를 가장 상단으로 설정
         } else {
-            panel.setComponentZOrder(maskPanelLeft, 0);
+            maskPanelLeft.setBounds(50, 100, 300, 400);
+            maskPanelRight.setBounds(350, 100, 300, 400);
+            panel.add(maskPanelLeft); // 좌측 절반만 표시
+            panel.setComponentZOrder(maskPanelLeft, 0); // maskPanelLeft를 가장 상단으로 설정
         }
+
+        // 정답 입력 및 타이머 추가
         JLabel ansLabel = new JLabel("정답: ");
-        ansLabel.setBounds(60, 470, 80, 30);
+        ansLabel.setBounds(50, 520, 60, 30);
         ansLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 15));
         panel.add(ansLabel);
 
         JTextField ansField = new JTextField();
-        ansField.setBounds(130, 470, 500, 30);
+        ansField.setBounds(110, 520, 400, 30);
         panel.add(ansField);
 
         JButton sendButton = new JButton("확인");
-        sendButton.setBounds(660, 470, 80, 30);
+        sendButton.setBounds(520, 520, 80, 30);
         sendButton.setFont(new Font("Malgun Gothic", Font.PLAIN, 15));
         panel.add(sendButton);
 
         JLabel timerLabel = new JLabel("남은 시간: " + timeLimit + "초");
-        timerLabel.setBounds(330, 520, 150, 30);
+        timerLabel.setBounds(300, 560, 200, 30);
         timerLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 20));
         panel.add(timerLabel);
 
-        panel.add(logoLabel);
-        panel.add(backButton);
         panel.revalidate();
         panel.repaint();
 
-        // Timer 설정
-        Timer timer = new Timer(1000, null); // 1초마다 실행
-        final int[] timeRemaining = { timeLimit };
+    // 타이머 설정
+        Timer timer = new Timer(1000, null);
+        final int[] timeRemaining = {timeLimit};
 
-        sendButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                timer.stop(); // 타이머 중지
-                String userAnswer = ansField.getText();
-                if (userAnswer.equals(currentQuiz.getAnswer())) {
-//                    score++;
-                    JOptionPane.showMessageDialog(frame, "정답입니다!");
-                    try{
-                        Message nextQuizMessage = new Message("nextCooperationQuiz")
-                                .setRoomId(roomId)
-                                .setUserId(userId)
-                                .setData(String.valueOf(currentIndex+1));
-                        out.writeObject(nextQuizMessage);
-                        out.flush();
-                    } catch (IOException ex){
-                        ex.printStackTrace();
-                    }
-                } else {
-                    JOptionPane.showMessageDialog(frame, "오답입니다.");
+        sendButton.addActionListener(e -> {
+            timer.stop();
+            String userAnswer = ansField.getText();
+            if (userAnswer.equals(currentQuiz.getAnswer())) {
+                JOptionPane.showMessageDialog(frame, "정답입니다!");
+                try {
+                    Message nextQuizMessage = new Message("nextCooperationQuiz")
+                            .setRoomId(roomId)
+                            .setUserId(userId)
+                            .setData(String.valueOf(currentIndex + 1));
+                    out.writeObject(nextQuizMessage);
+                    out.flush();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
                 }
+            } else {
+                JOptionPane.showMessageDialog(frame, "오답입니다.");
             }
         });
 
-        // 타이머 이벤트 추가
         timer.addActionListener(e -> {
             timeRemaining[0]--;
             timerLabel.setText("남은 시간: " + timeRemaining[0] + "초");
@@ -190,7 +209,6 @@ public class CooperationStartUI {
             if (timeRemaining[0] <= 0) {
                 timer.stop();
                 JOptionPane.showMessageDialog(frame, "시간 초과! 오답 처리됩니다.");
-                // 다음 문제로 이동
                 currentIndex++;
                 if (currentIndex < quizList.size()) {
                     displayQuiz(panel, frame, logoLabel, backButton, currentIndex);
@@ -202,9 +220,10 @@ public class CooperationStartUI {
             }
         });
 
-        // 타이머 시작
         timer.start();
     }
+
+
 
     private void sendMessage(String messageContent) {
         try {
@@ -224,7 +243,9 @@ public class CooperationStartUI {
             try {
                 while (true) {
                     Message message = receiver.takeMessage();
-                    if ("toNextCooperationQuiz".equals(message.getType()) && message.getRoomId() == roomId) {
+                    if ("chat".equals(message.getType()) && message.getRoomId() == roomId) {
+                        chatArea.append(message.getUserId() + ": " + message.getData() + "\n");
+                    } else if ("toNextCooperationQuiz".equals(message.getType()) && message.getRoomId() == roomId) {
                         int nextIndex = Integer.parseInt(message.getData());
                         if (nextIndex < quizList.size()) {
                             SwingUtilities.invokeLater(() -> {
@@ -237,9 +258,6 @@ public class CooperationStartUI {
                             new MenuUI(socket, out, userId, receiver);
                         }
                     }
-//                    else if ("chat".equals(message.getType()) && message.getRoomId() == roomId) {
-//                        chatArea.append(message.getUserId() + ": " + message.getData() + "\n");
-//                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -247,5 +265,4 @@ public class CooperationStartUI {
         });
         messageThread.start();
     }
-
 }
