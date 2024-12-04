@@ -44,10 +44,6 @@ public class FetchSpeedRankingThread extends Thread {
         List<Map.Entry<String, Integer>> ranking = new ArrayList<>(scores.entrySet());
         ranking.sort((e1, e2) -> e2.getValue() - e1.getValue()); // 내림차순 정렬
 
-        /*
-        String data = "1\t홍길동\t3\n";
-        data += "2\t김철수\t2\n";
-        */
 
         // 응답 메시지 생성 및 전송
         String rankingList = "";
@@ -62,6 +58,7 @@ public class FetchSpeedRankingThread extends Thread {
             rankingList += curRank+"\t"+rankEntry.getKey()+"\t"+rankEntry.getValue()+"\n";
 
         }
+        System.out.println(rankingList);
         Message response = new Message("fetchSpeedRankingResponse")
                 .setData(rankingList);
         try {

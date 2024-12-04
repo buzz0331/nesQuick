@@ -21,6 +21,7 @@ public class SpeedCustomizeGetQuizUI {
     private String sendData;
     MessageReceiver receiver;
 
+
     public SpeedCustomizeGetQuizUI(Socket socket, ObjectOutputStream out, String userId, int num, String sendData, MessageReceiver receiver) {
         this.socket = socket;
         this.out = out;

@@ -2,14 +2,12 @@ package client.ui.gamemode.speedQuiz;
 
 import client.thread.MessageReceiver;
 import client.ui.RoomListUI;
-import client.ui.gamemode.speedQuiz.Quiz;
-import client.ui.gamemode.speedQuiz.SpeedRankingUI;
+import client.ui.gamemode.versusUI.VersusRankingUI;
 import client.ui.icon.ArrowIcon;
 import protocol.Message;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
@@ -26,7 +24,10 @@ public class StartSpeedQuiz {
     private int score=0;
     private MessageReceiver receiver;
     private int currentIndex=0;
+    private volatile boolean running = true;
+    private Thread messageThread; // 메시지 처리 스레드
 
+    private JLabel timerLabel;
     private JPanel panel;
     private JFrame frame;
     private JLabel logoLabel;
@@ -41,6 +42,8 @@ public class StartSpeedQuiz {
         this.userId = userId;
         this.quizList = quizList;
         this.receiver = receiver;
+
+        int timeLimit = quizList.get(0).getTime();
 
         this.frame = new JFrame("Speed Start");
         frame.setSize(800, 600);
@@ -70,14 +73,52 @@ public class StartSpeedQuiz {
 //        // 문제 진행을 위한 초기 인덱스
 //        final int[] currentIndex = {0};
 
+        this.timerLabel = new JLabel("남은 시간: " + timeLimit + "초");
+        timerLabel.setBounds(330, 380, 150, 30);
+        timerLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 20));
+        panel.add(timerLabel);
+
         // 문제 표시 메서드
         displayQuiz(panel, frame, logoLabel, backButton, currentIndex);
 
         // 뒤로가기 버튼 동작
         backButton.addActionListener(e -> {
             frame.dispose();
-            new RoomListUI(socket, out, "Versus Mode", userId, receiver);
+            new RoomListUI(socket, out, "Speed Mode", userId, receiver);
         });
+
+        Timer timer = new Timer(1000, null);
+        final int[] timeRemaining = {timeLimit};
+
+
+
+        timer.addActionListener(e -> {
+            timeRemaining[0]--;
+            timerLabel.setText("남은 시간: " + timeRemaining[0] + "초");
+
+            if (timeRemaining[0] <= 0) {
+                timer.stop();
+                SwingUtilities.invokeLater(() -> {
+                    JOptionPane.showMessageDialog(frame, "퀴즈가 종료되었습니다!\n최종 점수: " + score);
+                    try{
+                        Message request = new Message("fetchSpeedRanking")
+                                .setRoomId(roomId)
+                                .setUserId(userId)
+                                .setData(score+"");
+                        out.writeObject(request);
+                        out.flush();
+                    } catch (IOException exception) {
+                        exception.printStackTrace();
+                    }
+                });
+            }
+        });
+
+        // 타이머 시작
+        timer.start();
+
+        messageThread = new Thread(this::listenForMessages);
+        messageThread.start();
 
     }
 
@@ -110,10 +151,11 @@ public class StartSpeedQuiz {
 
         panel.add(logoLabel);
         panel.add(backButton);
+        if (timerLabel != null) {
+            panel.add(timerLabel);
+        }
         panel.revalidate();
         panel.repaint();
-
-
 
         sendButton.addActionListener(e -> {
                 String userAnswer = ansField.getText();
@@ -134,16 +176,7 @@ public class StartSpeedQuiz {
                 } else {
                     JOptionPane.showMessageDialog(frame, "오답입니다. 현재 점수: " + score);
                 }
-//                if (currentIndex[0] < quizList.size()) {
-//                    displayQuiz(panel, frame, logoLabel, backButton, currentIndex); // 다음 문제 호출
-//                } else {
-//                    JOptionPane.showMessageDialog(frame, "퀴즈가 종료되었습니다!\n최종 점수: " + score);
-//                    java.util.List<String> list = fetchSpeedRankingFromServer();
-//                    frame.dispose();
-//                    new VersusRankingUI(socket, out, roomId, userId, list, receiver);
-//                }
         });
-
     }
 
     private java.util.List<String> fetchSpeedRankingFromServer() {
@@ -172,7 +205,7 @@ public class StartSpeedQuiz {
     private void listenForMessages() {
         Thread messageThread = new Thread(() -> {
             try {
-                while (true) {
+                while (running) {
                     Message message = receiver.takeMessage();
                     if ("toNextSpeedQuiz".equals(message.getType()) && message.getRoomId() == roomId) {
                         int nextIndex = Integer.parseInt(message.getData());
@@ -184,11 +217,31 @@ public class StartSpeedQuiz {
                         } else {
                             SwingUtilities.invokeLater(() -> {
                                 JOptionPane.showMessageDialog(frame, "퀴즈가 종료되었습니다!\n최종 점수: " + score);
-                                List<String> list = fetchSpeedRankingFromServer();
-                                frame.dispose();
-                                new SpeedRankingUI(socket, out, roomId, userId, list, receiver);
+
+                                try{
+                                    Message request = new Message("fetchSpeedRanking")
+                                            .setRoomId(roomId)
+                                            .setUserId(userId)
+                                            .setData(score+"");
+                                    out.writeObject(request);
+                                    out.flush();
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
                             });
                         }
+                    } else if ("fetchSpeedRankingResponse".equals(message.getType())) {
+                        SwingUtilities.invokeLater(() -> {
+                            List<String> ranking = new ArrayList<>();
+                            String data = message.getData();
+                            String tmp[] = data.split("\n");
+                            for(int i=0;i< tmp.length;i++){
+                                ranking.add(tmp[i]);
+                            }
+                            stopThread();
+                            frame.dispose();
+                            new SpeedRankingUI(socket, out, roomId, userId, ranking, receiver);
+                        });
                     }
                 }
             } catch (Exception e) {
@@ -196,5 +249,14 @@ public class StartSpeedQuiz {
             }
         });
         messageThread.start();
+
     }
+
+    private void stopThread() {
+        running = false; // 플래그를 false로 설정
+        if (messageThread != null && messageThread.isAlive()) {
+            messageThread.interrupt(); // 스레드 인터럽트
+        }
+    }
+
 }

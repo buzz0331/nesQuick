@@ -76,7 +76,6 @@ public class SpeedCustomizeUI {
         frame.setVisible(true);
 
 
-
         // 뒤로가기 버튼 동작
         backButton.addActionListener(e -> {
             frame.dispose();
