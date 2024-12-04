@@ -142,7 +142,7 @@ public class CooperationUI {
         // 뒤로가기 버튼 동작
         backButton.addActionListener(e -> {
             stopThread();
-            outRoom(roomId);
+            outRoom(roomId, masterId);
             frame.dispose();
             new RoomListUI(socket, out, "Cooperation Mode", userId, receiver);
         });
@@ -224,10 +224,11 @@ public class CooperationUI {
         return quizList;
     }
 
-    private void outRoom(int roomId) {
+    private void outRoom(int roomId, String masterId) {
         try {
             Message outRequest = new Message("outRoom")
                     .setUserId(userId)
+                    .setRoomMaster(masterId)
                     .setData(String.valueOf(roomId));
             out.writeObject(outRequest);
 

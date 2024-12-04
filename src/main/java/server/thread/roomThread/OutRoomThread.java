@@ -21,16 +21,20 @@ public class OutRoomThread extends Thread {
     public void run() {
         int roomId = Integer.parseInt(message.getData());
         String userId = message.getUserId();
+        String masterId = message.getRoomMaster();
 
         try (Connection conn = QuizServer.getConnection()) {
             // 방에서 클라이언트 제거
             QuizServer.removeClientFromRoom(roomId, userId);
 
-            // current_count 감소
-            String updateQuery = "UPDATE Room SET current_count = current_count - 1 WHERE id = ?";
-            PreparedStatement updateStmt = conn.prepareStatement(updateQuery);
-            updateStmt.setInt(1, roomId);
-            updateStmt.executeUpdate();
+            //방장이 아닌 경우
+            if (!userId.equals(masterId)) {
+                // current_count 감소
+                String updateQuery = "UPDATE Room SET current_count = current_count - 1 WHERE id = ?";
+                PreparedStatement updateStmt = conn.prepareStatement(updateQuery);
+                updateStmt.setInt(1, roomId);
+                updateStmt.executeUpdate();
+            }
 
 //            // 방 퇴장 성공 메시지 전송
             Message response = new Message("outRoomSuccess")

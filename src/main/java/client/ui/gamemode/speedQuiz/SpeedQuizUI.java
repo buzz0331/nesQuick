@@ -198,7 +198,7 @@ public class SpeedQuizUI {
 //            } catch (InterruptedException ex) {
 //                throw new RuntimeException(ex);
 //            }
-            outRoom(roomId);
+            outRoom(roomId, masterId);
             frame.dispose();
             new RoomListUI(socket, out, "Speed Quiz Mode", userId, receiver);
         });
@@ -347,10 +347,11 @@ public class SpeedQuizUI {
         userCountLabel.setText("현재 사용자: " + userCount + "명");
     }
 
-    private void outRoom(int roomId) {
+    private void outRoom(int roomId, String masterId) {
         try {
             Message outRequest = new Message("outRoom")
                     .setUserId(userId)
+                    .setRoomMaster(masterId)
                     .setData(String.valueOf(roomId));
             out.writeObject(outRequest);
 

@@ -38,23 +38,25 @@ public class EnterRoomThread extends Thread {
                 int currentCount = rs.getInt("current_count");
                 String masterId = rs.getString("master_id");
 
-                // 방장이 아닌 경우 capacity 초과 확인
-                if (!userId.equals(masterId) && currentCount >= capacity) {
-                    // 방 인원 초과 메시지 전송
-                    Message errorResponse = new Message("enterRoomFailure")
-                            .setData("방 인원 초과!");
-                    out.writeObject(errorResponse);
-                    return;
+                // 방장이 아닌 경우
+                if (!userId.equals(masterId)) {
+                    if (currentCount >= capacity) {//capacity 초과 여부 확인
+                        // 방 인원 초과 메시지 전송
+                        Message errorResponse = new Message("enterRoomFailure")
+                                .setData("방 인원 초과!");
+                        out.writeObject(errorResponse);
+                        return;
+                    } else {
+                        // current_count 증가
+                        String updateQuery = "UPDATE Room SET current_count = current_count + 1 WHERE id = ?";
+                        PreparedStatement updateStmt = conn.prepareStatement(updateQuery);
+                        updateStmt.setInt(1, roomId);
+                        updateStmt.executeUpdate();
+                    }
                 }
 
                 // 방에 클라이언트 추가
                 QuizServer.addClientToRoom(roomId, userId, storeStream);
-
-                // current_count 증가
-                String updateQuery = "UPDATE Room SET current_count = current_count + 1 WHERE id = ?";
-                PreparedStatement updateStmt = conn.prepareStatement(updateQuery);
-                updateStmt.setInt(1, roomId);
-                updateStmt.executeUpdate();
 
                 // 방 입장 성공 메시지 전송
                 Message response = new Message("enterRoomSuccess")
