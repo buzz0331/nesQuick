@@ -23,7 +23,7 @@ public class RoomAddUI {
         this.userId = userId;
 
         JFrame frame = new JFrame("Create Room - " + gameMode);
-        frame.setSize(400, 300);
+        frame.setSize(500, 450);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JPanel panel = new JPanel();
@@ -41,36 +41,36 @@ public class RoomAddUI {
 
         // 로고
         JLabel logoLabel = new JLabel(new ImageIcon("./src/main/java/client/ui/nesquick_logo.png"));
-        logoLabel.setBounds(150, 20, 100, 50);  // 가운데 상단에 로고 배치
+        logoLabel.setBounds(125, 30, 250, 100);
         panel.add(logoLabel);
 
         // 게임 모드 라벨
         JLabel modeLabel = new JLabel("게임 모드: " + gameMode);
-        modeLabel.setBounds(120, 80, 200, 30);
+        modeLabel.setBounds(175, 160, 200, 30);
         modeLabel.setFont(new Font("Arial", Font.BOLD, 14));
         panel.add(modeLabel);
 
         // 방 이름 입력
         JLabel nameLabel = new JLabel("방 이름:");
-        nameLabel.setBounds(50, 120, 80, 25);
+        nameLabel.setBounds(150, 200, 80, 25);
         panel.add(nameLabel);
 
         JTextField nameText = new JTextField(20);
-        nameText.setBounds(150, 120, 180, 25);
+        nameText.setBounds(230, 200, 150, 25);
         panel.add(nameText);
 
         // 인원 제한 입력
         JLabel capacityLabel = new JLabel("인원 제한:");
-        capacityLabel.setBounds(50, 160, 80, 25);
+        capacityLabel.setBounds(150, 240, 80, 25);
         panel.add(capacityLabel);
 
         JTextField capacityText = new JTextField(20);
-        capacityText.setBounds(150, 160, 180, 25);
+        capacityText.setBounds(230, 240, 150, 25);
         panel.add(capacityText);
 
         // 방 생성 버튼
         JButton createButton = new JButton("방 생성");
-        createButton.setBounds(150, 210, 100, 30);
+        createButton.setBounds(195, 280, 100, 30);
         createButton.setBackground(new Color(255, 223, 85));
         createButton.setForeground(Color.BLACK);
         createButton.setFocusPainted(false);

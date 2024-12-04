@@ -1,7 +1,7 @@
 package client.ui;
 
 import client.thread.MessageReceiver;
-import client.ui.gamemode.CooperationUI;
+import client.ui.gamemode.cooperationUI.CooperationUI;
 import client.ui.gamemode.speedQuiz.SpeedQuizUI;
 import client.ui.gamemode.versusUI.VersusUI;
 import client.ui.icon.ArrowIcon;
@@ -9,8 +9,6 @@ import protocol.Message;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
@@ -33,7 +31,7 @@ public class RoomListUI {
         this.roomMap = new HashMap<>();
 
         JFrame frame = new JFrame("Room List - " + gameMode);
-        frame.setSize(600, 500);
+        frame.setSize(640, 500);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JPanel panel = new JPanel();
@@ -51,7 +49,7 @@ public class RoomListUI {
 
         // 로고
         JLabel logoLabel = new JLabel(new ImageIcon("./src/main/java/client/ui/nesquick_logo.png"));
-        logoLabel.setBounds(500, 10, 80, 80);
+        logoLabel.setBounds(400, 10, 250, 100);
         panel.add(logoLabel);
 
         // 방 리스트 라벨
@@ -93,21 +91,16 @@ public class RoomListUI {
         addRoomButton.setFocusPainted(false);
         panel.add(addRoomButton);
 
-        addRoomButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                frame.dispose();
-                new RoomAddUI(socket, out, gameMode, loginUserId, receiver);
-            }
+        addRoomButton.addActionListener(e -> {
+            frame.dispose();
+            new RoomAddUI(socket, out, gameMode, loginUserId, receiver);
         });
 
         frame.setVisible(true);
 
-        backButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                frame.dispose();
-                new GameModeUI(socket, out, loginUserId, receiver);
-            }
+        backButton.addActionListener(e -> {
+            frame.dispose();
+            new GameModeUI(socket, out, loginUserId, receiver);
         });
     }
 
@@ -118,6 +111,7 @@ public class RoomListUI {
                     .setData(String.valueOf(roomId));
             out.writeObject(enterRequest);
 
+            // 서버로부터 응답 받기
             Message response = receiver.takeMessage();
             if ("enterRoomSuccess".equals(response.getType())) {
                 String masterId = response.getRoomMaster();
@@ -125,7 +119,7 @@ public class RoomListUI {
                 switch (gameMode) {
                     case "Speed Quiz Mode":
                         frame.dispose();
-                        new SpeedQuizUI(socket, out, roomId, userId, masterId, receiver, userCount,gameMode);
+                        new SpeedQuizUI(socket, out, roomId, userId, masterId, receiver, userCount, gameMode);
                         break;
                     case "Versus Mode":
                         frame.dispose();
@@ -133,14 +127,16 @@ public class RoomListUI {
                         break;
                     case "Cooperation Mode":
                         frame.dispose();
-                        new CooperationUI(socket, out, roomId, userId, receiver);
+                        new CooperationUI(socket, out, roomId, userId, masterId, receiver, gameMode, userCount);
                         break;
                     default:
                         JOptionPane.showMessageDialog(null, "알 수 없는 게임 모드입니다.");
                         break;
                 }
+            } else if ("enterRoomFailure".equals(response.getType())) {
+                JOptionPane.showMessageDialog(null, response.getData()); // 방 입장 실패 메시지 표시
             } else {
-                JOptionPane.showMessageDialog(null, "방 입장 실패: " + response.getData());
+                JOptionPane.showMessageDialog(null, "알 수 없는 응답입니다.");
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -177,7 +173,5 @@ public class RoomListUI {
             e.printStackTrace();
             roomMap.put(-1, "Failed to load rooms");
         }
-
     }
-
 }

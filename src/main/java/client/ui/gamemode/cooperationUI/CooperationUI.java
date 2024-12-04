@@ -1,4 +1,4 @@
-package client.ui.gamemode.versusUI;
+package client.ui.gamemode.cooperationUI;
 
 import client.thread.MessageReceiver;
 import client.ui.RoomListUI;
@@ -12,7 +12,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
-public class VersusUI {
+public class CooperationUI {
     private final Socket socket;
     private final ObjectOutputStream out;
     private final int roomId;
@@ -31,7 +31,7 @@ public class VersusUI {
     private DefaultListModel<String> listModel;
     private JList<String> quizSetList;
 
-    public VersusUI(Socket socket, ObjectOutputStream out, int roomId, String userId, String masterId, MessageReceiver receiver, String gameMode, int userCount) {
+    public CooperationUI(Socket socket, ObjectOutputStream out, int roomId, String userId, String masterId, MessageReceiver receiver, String gameMode, int userCount) {
         this.socket = socket;
         this.out = out;
         this.roomId = roomId;
@@ -41,7 +41,7 @@ public class VersusUI {
         this.gameMode = gameMode;
         this.userCount = userCount;
 
-        frame = new JFrame("Versus");
+        frame = new JFrame("Cooperation");
         frame.setSize(800, 600);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -117,7 +117,7 @@ public class VersusUI {
                 titleLabel.setVisible(true);
                 quizSetList.setVisible(true);
                 listModel.clear();  // 기존 항목 제거
-                fetchVersusQuizSetsFromServer();  // 서버에 요청만 보냄
+                fetchCooperationQuizSetsFromServer();  // 서버에 요청만 보냄
 
                 //시작 버튼을 게임 시작 버튼으로 변경
                 startButton.setText("Game Start");
@@ -126,7 +126,7 @@ public class VersusUI {
                     String selectedQuizSet = quizSetList.getSelectedValue();
                     if (selectedQuizSet != null) {
                         System.out.println("선택된 퀴즈 세트: " + selectedQuizSet);
-                        fetchVersusQuizListFromServer(selectedQuizSet);
+                        fetchCooperationQuizListFromServer(selectedQuizSet);
                     } else {
                         JOptionPane.showMessageDialog(frame, "퀴즈 세트를 선택해주세요.");
                     }
@@ -136,56 +136,7 @@ public class VersusUI {
         if(!isMaster){
             chatArea.append("Waiting for the host to start the game...\n");
         }
-/*
-        // 방장인 경우
-        if (userId.equals(masterId)) {
-            // 게임 시작 버튼
-            JButton startButton = new JButton("Game Start");
-            startButton.setBounds(10, 70, 150, 30);
-            panel.add(startButton);
 
-            // 퀴즈 set 리스트 라벨
-            JLabel titleLabel = new JLabel("Quiz set 리스트");
-            titleLabel.setBounds(200, 50, 200, 30);
-            titleLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 18));
-            panel.add(titleLabel);
-
-            // 서버로부터 퀴즈 set들 가져오기
-            List<String> quizSets = fetchVersusQuizSetsFromServer();
-
-            // 퀴즈 set 리스트 표시
-            DefaultListModel<String> listModel = new DefaultListModel<>();
-            for (String s : quizSets) {
-                listModel.addElement(s);
-            }
-            JList<String> quizSetList = new JList<>(listModel);
-            quizSetList.setBounds(50, 100, 500, 200);
-            quizSetList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-            panel.add(quizSetList);
-
-            // 게임 시작 버튼 동작
-            startButton.addActionListener(e -> {
-                // 비동기로 퀴즈 데이터를 가져오는 작업 실행
-                new Thread(() -> {
-                    list = fetchVersusQuizListFromServer(quizSetList.getSelectedValue());
-                    SwingUtilities.invokeLater(() -> {
-                        stopThread();
-                        frame.dispose();
-                        new VersusStartUI(socket, out, roomId, userId, list, receiver);
-                    });
-                }).start();
-
-            });
-
-            // 뒤로가기 버튼 동작
-            backButton.addActionListener(e -> {
-                stopThread();
-                outRoom(roomId);
-                frame.dispose();
-                new RoomListUI(socket, out, "Versus Mode", userId, receiver);
-            });
-        }
-*/
         frame.setVisible(true);
 
         // 뒤로가기 버튼 동작
@@ -193,7 +144,7 @@ public class VersusUI {
             stopThread();
             outRoom(roomId, masterId);
             frame.dispose();
-            new RoomListUI(socket, out, "Versus Mode", userId, receiver);
+            new RoomListUI(socket, out, "Cooperation Mode", userId, receiver);
         });
 
         // 메시지 전송 동작
@@ -225,10 +176,10 @@ public class VersusUI {
         }
     }
 
-    private List<String> fetchVersusQuizSetsFromServer() {
+    private List<String> fetchCooperationQuizSetsFromServer() {
         List<String> quizSetList = new ArrayList<>();
         try {
-            Message request = new Message("fetchVersusQuizSets")
+            Message request = new Message("fetchCooperationQuizSets")
                     .setUserId(userId)
                     .setRoomId(roomId)
                     .setData(gameMode);
@@ -242,10 +193,10 @@ public class VersusUI {
         return quizSetList;
     }
 
-    private List<Quiz> fetchVersusQuizListFromServer(String selectedValue) {
+    private List<Quiz> fetchCooperationQuizListFromServer(String selectedValue) {
         List<Quiz> quizList = new ArrayList<>();
         try {
-            Message request = new Message("fetchVersusQuizList")
+            Message request = new Message("fetchCooperationQuizList")
                     .setUserId(userId)
                     .setRoomId(roomId)
                     .setData(selectedValue);
@@ -304,11 +255,11 @@ public class VersusUI {
                     chatArea.append(message.getData() + "\n");
                     userCount++;
                     updateUserCountLabel();
-                } else if ("userExit".equals(message.getType()) && message.getRoomId() == roomId) {
+                }else if ("userExit".equals(message.getType()) && message.getRoomId() == roomId) {
                     chatArea.append(message.getData() + "\n");
                     userCount--;
                     updateUserCountLabel();
-                } else if ("fetchVersusQuizSetsResponse".equals(message.getType())) {
+                } else if ("fetchCooperationQuizSetsResponse".equals(message.getType())) {
                     String data = message.getData();
                     if (data != null) {
                         System.out.println("데이터 길이: " + data.length());
@@ -336,7 +287,10 @@ public class VersusUI {
                     SwingUtilities.invokeLater(() -> {
                         stopThread();
                         frame.dispose();
-                        new VersusStartUI(socket, out, roomId, userId, list, receiver);
+                        if(isMaster)
+                            new CooperationStartUI(socket, out, roomId, userId, 0, list, receiver);
+                        else
+                            new CooperationStartUI(socket, out, roomId, userId, 1, list, receiver);
                     });
                     break; // 게임 시작 메시지 처리 후 루프 종료
                 }

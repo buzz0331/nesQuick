@@ -62,7 +62,7 @@ public class SpeedQuizUI {
 
         // 로고
         JLabel logoLabel = new JLabel(new ImageIcon("./src/main/java/client/ui/nesquick_logo.png"));
-        logoLabel.setBounds(700, 10, 80, 80);
+        logoLabel.setBounds(530, 10, 250, 100);
         panel.add(logoLabel);
 
         // 사용자 수 라벨
@@ -83,7 +83,7 @@ public class SpeedQuizUI {
         chatArea = new JTextArea();
         chatArea.setEditable(false);
         JScrollPane chatScroll = new JScrollPane(chatArea);
-        chatScroll.setBounds(50, 100, 700, 350);
+        chatScroll.setBounds(50, 310, 700, 140);
         panel.add(chatScroll);
 
         // 메시지 입력 필드
@@ -198,7 +198,7 @@ public class SpeedQuizUI {
 //            } catch (InterruptedException ex) {
 //                throw new RuntimeException(ex);
 //            }
-            outRoom(roomId);
+            outRoom(roomId, masterId);
             frame.dispose();
             new RoomListUI(socket, out, "Speed Quiz Mode", userId, receiver);
         });
@@ -272,6 +272,10 @@ public class SpeedQuizUI {
                     chatArea.append(message.getData() + "\n");
                     userCount++;
                     updateUserCountLabel();
+                }else if ("userExit".equals(message.getType()) && message.getRoomId() == roomId) {
+                    chatArea.append(message.getData() + "\n");
+                    userCount--;
+                    updateUserCountLabel();
                 } else if ("fetchSpeedQuizSetsResponse".equals(message.getType())) {
                     String data = message.getData();
                     if (data != null) {
@@ -343,15 +347,23 @@ public class SpeedQuizUI {
         userCountLabel.setText("현재 사용자: " + userCount + "명");
     }
 
-    private void outRoom(int roomId) {
+    private void outRoom(int roomId, String masterId) {
         try {
             Message outRequest = new Message("outRoom")
                     .setUserId(userId)
+                    .setRoomMaster(masterId)
                     .setData(String.valueOf(roomId));
             out.writeObject(outRequest);
 
             Message response = receiver.takeMessage();
-            System.out.println(response.getData());
+            if ("outRoomSuccess".equals(response.getType())) {
+                System.out.println(response.getData());
+            } else {
+                JOptionPane.showMessageDialog(frame, "현재 방을 나갈 수 없습니다. 다시 시도해주세요.");
+                messageThread = new Thread(this::listenForMessages);
+                messageThread.start();
+            }
+
         } catch (Exception e) {
             e.printStackTrace();
         }

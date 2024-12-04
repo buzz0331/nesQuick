@@ -16,14 +16,12 @@ public class DatabaseInit {
         String userTable = "CREATE TABLE IF NOT EXISTS User (" +
                 "id VARCHAR(15) PRIMARY KEY," +
                 "password VARCHAR(15) NOT NULL," +
-                "win_count INTEGER DEFAULT 0," +
                 "name VARCHAR(30) NOT NULL" +
                 ");";
 
         String quizSetTable = "CREATE TABLE IF NOT EXISTS QuizSet (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "user_id VARCHAR(15)," +
-                "recommended_count INTEGER DEFAULT 0," +
                 "game_category VARCHAR(20) NOT NULL," +
                 "FOREIGN KEY(user_id) REFERENCES User(id)" +
                 ");";
@@ -34,7 +32,7 @@ public class DatabaseInit {
                 "master_id VARCHAR(15) NOT NULL," +
                 "name VARCHAR(500)," +
                 "capacity INTEGER NOT NULL," +        // 인원 제한 열
-                "current_count INTEGER DEFAULT 0," +  // 현재 인원 수 열
+                "current_count INTEGER DEFAULT 0," +  // 방장을 제외한 방 인원
                 "FOREIGN KEY(master_id) REFERENCES User(id)" +
                 ");";
 

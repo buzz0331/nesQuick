@@ -25,7 +25,7 @@ private static final Map<Integer, Map<String, StoreStream>> rooms = new HashMap<
     private static final Map<String, ObjectOutputStream> clientOutputStreams = new HashMap<>();
     private static final Map<Integer,Map<String,Socket>> roomClients = new HashMap<>();
 
-    private static Connection getConnection() throws SQLException {
+    public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(DB_URL);
     }
     // 클라이언트 출력 스트림 저장
