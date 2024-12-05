@@ -69,7 +69,7 @@ public class SpeedRankingUI {
         backButton.addActionListener(e -> {
             outRoom(roomId);
             frame.dispose();
-            new RoomListUI(socket, out, "Speed Mode", this.userId, receiver);
+            new RoomListUI(socket, out, "Speed Quiz Mode", this.userId, receiver);
         });
 
     }
