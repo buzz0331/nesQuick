@@ -74,7 +74,7 @@ public class CooperationStartUI {
         chatArea = new JTextArea();
         chatArea.setEditable(false);
         chatArea.setBackground(new Color(245, 245, 245));
-        chatArea.setFont(new Font("Arial", Font.PLAIN, 14));
+        chatArea.setFont(new Font("Malgun Gothic", Font.BOLD, 14));
         JScrollPane chatScroll = new JScrollPane(chatArea);
         chatScroll.setBounds(850, 150, 300, 400); // 우측 배치
         panel.add(chatScroll);
