@@ -176,8 +176,7 @@ public class CooperationUI {
         }
     }
 
-    private List<String> fetchCooperationQuizSetsFromServer() {
-        List<String> quizSetList = new ArrayList<>();
+    private void fetchCooperationQuizSetsFromServer() {
         try {
             Message request = new Message("fetchCooperationQuizSets")
                     .setUserId(userId)
@@ -185,29 +184,29 @@ public class CooperationUI {
                     .setData(gameMode);
             out.writeObject(request);
             out.flush();
-
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-        return quizSetList;
     }
 
-    private List<Quiz> fetchCooperationQuizListFromServer(String selectedValue) {
-        List<Quiz> quizList = new ArrayList<>();
+    private void fetchCooperationQuizListFromServer(String selectedValue) {
         try {
+            int selectedIndex = quizSetList.getSelectedIndex(); // 선택된 인덱스
+            String data = (String) listModel.get(selectedIndex);
+            String[] parts = data.split("\tID:");
+            String quizSetId = parts[1]; // ID 추출
+
             Message request = new Message("fetchCooperationQuizList")
                     .setUserId(userId)
                     .setRoomId(roomId)
-                    .setData(selectedValue);
+                    .setData(quizSetId);
             out.writeObject(request);
             out.flush();
-
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return quizList;
     }
+
 
     private List<Quiz> parseQuizList(String data) {
         List<Quiz> quizList = new ArrayList<>();
@@ -261,23 +260,16 @@ public class CooperationUI {
                     updateUserCountLabel();
                 } else if ("fetchCooperationQuizSetsResponse".equals(message.getType())) {
                     String data = message.getData();
-                    if (data != null) {
-                        System.out.println("데이터 길이: " + data.length());
-                        System.out.println("실제 데이터 내용: [" + data + "]");
-                    }
-
-                    if (data == null || data.isEmpty()) {
-                        System.out.println("데이터가 비어있습니다");
-                        continue;
-                    }
                     SwingUtilities.invokeLater(() -> {
-                        String[] quizArr = data.split("\n");
-                        for (String quiz : quizArr) {
-                            quiz=quiz.trim();
-                            listModel.addElement(quiz);
-                            System.out.println("추가된 퀴즈 세트: " + quiz);
+                        listModel.clear(); // 기존 리스트 초기화
+                        String[] quizSets = data.split("\n");
+                        for (String quizSet : quizSets) {
+                            String[] parts = quizSet.split("\t");
+                            if (parts.length == 2) {
+                                String displayName = parts[1] + "\tID:" + parts[0].trim(); // 이름과 ID를 함께 표시
+                                listModel.addElement(displayName);
+                            }
                         }
-                        System.out.println("총 퀴즈 세트 수: " + listModel.size());
                     });
                 } else if ("gameStart".equals(message.getType())) {
                     // 게임 시작 관련 데이터 수신

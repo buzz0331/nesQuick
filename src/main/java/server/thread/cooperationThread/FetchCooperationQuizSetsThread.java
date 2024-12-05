@@ -20,38 +20,35 @@ public class FetchCooperationQuizSetsThread extends Thread{
     @Override
     public void run() {
         String gameMode = message.getData();
-        String data = "";
-        /*
-        data = "건국대문제\n";
-        data += "sample\n";
-        */
+        StringBuilder data = new StringBuilder();
 
         try (Connection conn = DriverManager.getConnection(DB_URL);
-             PreparedStatement stmt = conn.prepareStatement("SELECT id FROM QuizSet WHERE game_category = ?")) {
+             PreparedStatement stmt = conn.prepareStatement("SELECT id, quizSet_name FROM QuizSet WHERE game_category = ?")) {
             stmt.setString(1, gameMode);
             ResultSet rs = stmt.executeQuery();
 
             while (rs.next()) {
                 int quizSetId = rs.getInt("id");
-                data += quizSetId+"\n";
+                String quizSetName = rs.getString("quizSet_name");
+                data.append(quizSetId).append("\t").append(quizSetName).append("\n"); // ID와 이름 모두 추가
             }
 
             // 응답 메시지 생성 및 전송
             Message response = new Message("fetchCooperationQuizSetsResponse")
-                    .setData(data);
+                    .setData(data.toString());
             out.writeObject(response);
             out.flush();
 
         } catch (SQLException | IOException e) {
             e.printStackTrace();
             try {
-                // 오류 응답 메시지 전송
                 Message errorResponse = new Message("fetchRoomListResponse")
-                        .setRoomNames(Map.of(-1, "Failed to load rooms...."));
+                        .setRoomNames(Map.of(-1, "Failed to load quiz sets."));
                 out.writeObject(errorResponse);
             } catch (IOException ioException) {
                 ioException.printStackTrace();
             }
         }
     }
+
 }
