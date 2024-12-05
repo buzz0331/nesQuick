@@ -85,12 +85,19 @@ public class VersusCustomizeUI {
 
         // 확인 버튼 동작
         checkButton.addActionListener(e -> {
-            String title = titleField.getText();
+            String title = titleField.getText(); // 제목 입력값
             String selectedValue = (String) comboBox.getSelectedItem();
-            sendData = "Versus Mode"+"\n"+title+"\n";
+
+            if (title.isEmpty()) {
+                JOptionPane.showMessageDialog(frame, "퀴즈 제목을 입력해주세요!");
+                return;
+            }
+
+            sendData = "Versus Mode" + "\n" + title + "\n"; // 제목 포함 데이터 구성
             frame.dispose();
-            new VersusCustomizeGetQuizUI(socket, out, userId, Integer.parseInt(selectedValue),sendData, receiver);
+            new VersusCustomizeGetQuizUI(socket, out, userId, Integer.parseInt(selectedValue), sendData, receiver);
         });
+
 
     }
 }

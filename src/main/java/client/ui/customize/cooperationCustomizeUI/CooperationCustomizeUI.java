@@ -85,11 +85,17 @@ public class CooperationCustomizeUI {
 
         // 확인 버튼 동작
         checkButton.addActionListener(e -> {
-            String title = titleField.getText();
+            String title = titleField.getText(); // 제목 입력값
             String selectedValue = (String) comboBox.getSelectedItem();
-            sendData = "Cooperation Mode"+"\n"+title+"\n";
+
+            if (title.trim().isEmpty()) { // 제목이 비어있는지 확인
+                JOptionPane.showMessageDialog(frame, "퀴즈 제목을 입력해주세요!", "오류", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            sendData = "Cooperation Mode" + "\n" + title + "\n"; // 제목 포함 데이터 구성
             frame.dispose();
-            new CooperationCustomizeGetQuizUI(socket, out, userId, Integer.parseInt(selectedValue),sendData, receiver);
+            new CooperationCustomizeGetQuizUI(socket, out, userId, Integer.parseInt(selectedValue), sendData, receiver);
         });
 
     }
