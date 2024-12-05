@@ -27,7 +27,7 @@ public class SpeedRankingUI {
         this.ranking = ranking;
         this.receiver = receiver;
 
-        JFrame frame = new JFrame("VersusRanking");
+        JFrame frame = new JFrame("Speed Ranking");
         frame.setSize(800, 600);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -69,7 +69,7 @@ public class SpeedRankingUI {
         backButton.addActionListener(e -> {
             outRoom(roomId);
             frame.dispose();
-            new RoomListUI(socket, out, "Versus Mode", this.userId, receiver);
+            new RoomListUI(socket, out, "Speed Mode", this.userId, receiver);
         });
 
     }
