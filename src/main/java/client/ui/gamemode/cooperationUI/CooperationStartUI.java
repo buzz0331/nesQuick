@@ -219,7 +219,7 @@ public class CooperationStartUI {
                 } else {
                     JOptionPane.showMessageDialog(frame, "퀴즈가 종료되었습니다!");
                     frame.dispose();
-                    new MenuUI(socket, out, userId, receiver);
+                    new RoomListUI(socket, out, "Cooperation Mode", userId, receiver);
                 }
             }
         });
@@ -257,7 +257,7 @@ public class CooperationStartUI {
                         } else {
                             JOptionPane.showMessageDialog(frame, "퀴즈가 종료되었습니다!");
                             frame.dispose();
-                            new MenuUI(socket, out, userId, receiver);
+                            new RoomListUI(socket, out, "Cooperation Mode", userId, receiver);
                         }
                     }
                 }
