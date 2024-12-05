@@ -27,8 +27,13 @@ public class OutRoomThread extends Thread {
             // 방에서 클라이언트 제거
             QuizServer.removeClientFromRoom(roomId, userId);
 
-            //방장이 아닌 경우
-            if (!userId.equals(masterId)) {
+            if (masterId == null) { //게임이 끝나면 null로 넘어옴
+                String updateQuery = "UPDATE Room SET current_count = 1 WHERE id = ?";
+                PreparedStatement updateStmt = conn.prepareStatement(updateQuery);
+                updateStmt.setInt(1, roomId);
+                updateStmt.executeUpdate();
+            }
+            else if (!userId.equals(masterId)) { //방장이 아닌 경우
                 // current_count 감소
                 String updateQuery = "UPDATE Room SET current_count = current_count - 1 WHERE id = ?";
                 PreparedStatement updateStmt = conn.prepareStatement(updateQuery);
@@ -41,12 +46,15 @@ public class OutRoomThread extends Thread {
                     .setData("Successfully gone out from room: " + roomId);
             out.writeObject(response);
 
-            // 다른 사용자에게 퇴장 알림 메시지 브로드캐스트
-            Message broadcastMessage = new Message("userExit")
-                    .setRoomId(roomId)
-                    .setUserId(userId)
-                    .setData("플레이어 " + userId + " 님이 퇴장하셨습니다.");
-            QuizServer.broadcast(roomId, broadcastMessage);
+            if (masterId != null) {
+                // 다른 사용자에게 퇴장 알림 메시지 브로드캐스트
+                Message broadcastMessage = new Message("userExit")
+                        .setRoomId(roomId)
+                        .setUserId(userId)
+                        .setData("플레이어 " + userId + " 님이 퇴장하셨습니다.");
+                QuizServer.broadcast(roomId, broadcastMessage);
+            }
+
 
         } catch (Exception e) {
             e.printStackTrace();

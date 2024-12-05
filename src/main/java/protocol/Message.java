@@ -13,7 +13,7 @@ public class Message implements Serializable {
 
     private String roomName;
     private int roomId;
-    private String roomMaster;
+    private String roomMaster = null;
     private Map<Integer, String> roomNames;
     private int capacity;
     private String data; //Message body
