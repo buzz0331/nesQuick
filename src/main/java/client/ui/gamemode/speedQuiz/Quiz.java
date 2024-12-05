@@ -2,13 +2,13 @@ package client.ui.gamemode.speedQuiz;
 
 public class Quiz{
     private int num;
-    private int second;
+    private int time;
     private String question;
     private String answer;
 
-    public Quiz(int num, int second, String question, String answer) {
+    public Quiz(int num, int time, String question, String answer) {
         this.num = num;
-        this.second = second;
+        this.time = time;
         this.question = question;
         this.answer = answer;
     }
@@ -16,8 +16,8 @@ public class Quiz{
         return num;
     }
 
-    public int getSecond() {
-        return second;
+    public int getTime() {
+        return time;
     }
 
     public String getQuestion() {
