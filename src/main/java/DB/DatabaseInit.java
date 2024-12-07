@@ -22,6 +22,7 @@ public class DatabaseInit {
         String quizSetTable = "CREATE TABLE IF NOT EXISTS QuizSet (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "user_id VARCHAR(15)," +
+                "quizSet_name VARCHAR(400) NOT NULL," +
                 "game_category VARCHAR(20) NOT NULL," +
                 "FOREIGN KEY(user_id) REFERENCES User(id)" +
                 ");";

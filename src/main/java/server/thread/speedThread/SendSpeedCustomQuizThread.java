@@ -28,10 +28,11 @@ public class SendSpeedCustomQuizThread extends Thread {
         // DB에 저장
         try (Connection conn = DriverManager.getConnection(DB_URL)) {
             // QuizSet 테이블에 새로운 원소 삽입
-            String insertQuizSetSql = "INSERT INTO QuizSet (user_id, game_category) VALUES (?, ?)";
+            String insertQuizSetSql = "INSERT INTO QuizSet (user_id, game_category, quizSet_name) VALUES (?, ?, ?)";
             try (PreparedStatement stmt = conn.prepareStatement(insertQuizSetSql, Statement.RETURN_GENERATED_KEYS)) {
-                stmt.setString(1, userId);
-                stmt.setString(2, gameMode);
+                stmt.setString(1, userId);          // user_id
+                stmt.setString(2, gameMode);        // game_category
+                stmt.setString(3, quizSetTitle);    // quizSet_name (추가된 필드)
                 stmt.executeUpdate();
 
                 // 생성된 QuizSet의 ID 가져오기

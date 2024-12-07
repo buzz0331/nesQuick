@@ -6,15 +6,11 @@ import server.handler.ClientHandler;
 import java.io.*;
 import java.net.*;
 import java.sql.DriverManager;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.ResultSet;
 
 public class QuizServer {
     private static final int PORT = 12345;
@@ -22,25 +18,9 @@ public class QuizServer {
 private static final Map<Integer, Map<String, StoreStream>> rooms = new HashMap<Integer, Map<String, StoreStream>>();
     // 랭킹 처리를 위해 추가한 Map입니다
     private static final Map<Integer, Map<String, Integer>> roomScores = new HashMap<>(); // 방 별 사용자 점수 저장
-    private static final Map<String, ObjectOutputStream> clientOutputStreams = new HashMap<>();
-    private static final Map<Integer,Map<String,Socket>> roomClients = new HashMap<>();
 
     public static Connection getConnection() throws SQLException {
         return DriverManager.getConnection(DB_URL);
-    }
-    // 클라이언트 출력 스트림 저장
-    public static synchronized void addClientOutputStream(String userId, ObjectOutputStream out) {
-        clientOutputStreams.put(userId, out);
-    }
-
-    // 클라이언트 출력 스트림 가져오기
-    public static synchronized ObjectOutputStream getClientOutPutStream(String userId) {
-        return clientOutputStreams.get(userId);
-    }
-
-    // 클라이언트 출력 스트림 제거
-    public static synchronized void removeClientOutputStream(String userId) {
-        clientOutputStreams.remove(userId);
     }
 
     public static synchronized void addClientToRoom(int roomId, String userId, StoreStream storeStream) {
@@ -137,32 +117,9 @@ private static final Map<Integer, Map<String, StoreStream>> rooms = new HashMap<
         return new HashMap<>(roomScores.getOrDefault(roomId, new HashMap<>()));
     }
 
-    public static synchronized void clearRoomScores(int roomId) {
-        roomScores.remove(roomId);
-    }
-
     public static synchronized int getRoomUserCount(int roomId) {
         Map<String, StoreStream> room = rooms.get(roomId);
         return (room != null) ? room.size() : 0;
     }
-    
-    // 방의 모든 사용자 ID 가져오기
-    public static synchronized List<String> getUserIdsInRoom(int roomId) {
-        Map<String, Socket> clients = roomClients.get(roomId);
-        //clients가 없으면 빈 배열 반환
-        return (clients != null) ? new ArrayList<>(clients.keySet()) : new ArrayList<>(); 
-    }
-    public static String getRoomMaster(int roomId) {
-        try (Connection conn = getConnection();
-             PreparedStatement stmt = conn.prepareStatement("SELECT master_id FROM Room WHERE id = ?")) {
-            stmt.setInt(1, roomId);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                return rs.getString("master_id");
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
+
 }

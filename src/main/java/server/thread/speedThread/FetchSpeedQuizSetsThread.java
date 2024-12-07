@@ -20,34 +20,28 @@ public class FetchSpeedQuizSetsThread extends Thread {
     @Override
     public void run() {
         String gameMode = message.getData();
-        System.out.println(gameMode);
-        String data = "";
+        StringBuilder data = new StringBuilder();
 
         try (Connection conn = DriverManager.getConnection(DB_URL);
-
-             PreparedStatement stmt = conn.prepareStatement("SELECT id FROM QuizSet WHERE game_category = ?")) {
+             PreparedStatement stmt = conn.prepareStatement("SELECT id, quizSet_name FROM QuizSet WHERE game_category = ?")) {
             stmt.setString(1, gameMode);
             ResultSet rs = stmt.executeQuery();
 
-
-            System.out.println("쿼리 실행됨");
-
             while (rs.next()) {
                 int quizSetId = rs.getInt("id");
-                data += quizSetId + "\n";
+                String quizSetName = rs.getString("quizSet_name");
+                data.append(quizSetId).append("\t").append(quizSetName).append("\n"); // ID와 이름 모두 추가
             }
 
-            System.out.println(data);
             // 응답 메시지 생성 및 전송
             Message response = new Message("fetchSpeedQuizSetsResponse")
-                    .setData(data);
+                    .setData(data.toString());
             out.writeObject(response);
             out.flush();
 
         } catch (SQLException | IOException e) {
             e.printStackTrace();
             try {
-                // 오류 응답 메시지 전송
                 Message errorResponse = new Message("fetchRoomListResponse")
                         .setRoomNames(Map.of(-1, "Failed to load rooms...."));
                 out.writeObject(errorResponse);
@@ -56,6 +50,7 @@ public class FetchSpeedQuizSetsThread extends Thread {
             }
         }
     }
+
 }
 
 
