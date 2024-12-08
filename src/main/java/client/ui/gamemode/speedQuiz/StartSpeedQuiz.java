@@ -131,8 +131,9 @@ public class StartSpeedQuiz {
         String answer = currentQuiz.getAnswer();
 
         JLabel qLabel = new JLabel((index+ 1) + ". " + question);
-        qLabel.setBounds(175, 170, 500, 50);
-        qLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 30));
+        qLabel.setBounds(50, 170, 700, 50);
+        qLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 22));
+        qLabel.setHorizontalAlignment(SwingConstants.CENTER);
         panel.add(qLabel);
 
         JLabel ansLabel = new JLabel("정답: ");
