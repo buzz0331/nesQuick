@@ -131,8 +131,8 @@ public class StartSpeedQuiz {
         String question = currentQuiz.getQuestion();
         String answer = currentQuiz.getAnswer();
 
-        JLabel qLabel = new JLabel((index+ 1) + ". " + question);
-        qLabel.setBounds(50, 170, 700, 50);
+        JLabel qLabel = new JLabel("<html><div style='text-align: center;'>"+(index+ 1) + ". " + question+"</div></html>");
+        qLabel.setBounds(50, 170, 700, 120);
         qLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 22));
         qLabel.setHorizontalAlignment(SwingConstants.CENTER);
         panel.add(qLabel);

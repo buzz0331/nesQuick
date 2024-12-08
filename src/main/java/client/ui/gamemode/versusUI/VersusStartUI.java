@@ -79,8 +79,8 @@ public class VersusStartUI {
         String question = currentQuiz.getQuestion();
         String answer = currentQuiz.getAnswer();
 
-        JLabel qLabel = new JLabel((currentIndex[0] + 1) + ". " + question);
-        qLabel.setBounds(40, 170, 700, 50);
+        JLabel qLabel = new JLabel("<html><div style='text-align: center;'>"+(currentIndex[0] + 1) + ". " + question+"</div></html>");
+        qLabel.setBounds(40, 170, 700, 100);
         qLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 22));
         qLabel.setHorizontalAlignment(SwingConstants.CENTER);
         panel.add(qLabel);
