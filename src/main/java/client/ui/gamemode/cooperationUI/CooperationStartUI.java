@@ -280,7 +280,7 @@ public class CooperationStartUI {
                             });
                         } else {
                             JOptionPane.showMessageDialog(frame, "퀴즈가 종료되었습니다!");
-//                            outRoom(roomId);
+                            outRoom(roomId);
                             if (currentTimer != null) {
                                 currentTimer.stop(); // 기존 타이머 중지
                             }
