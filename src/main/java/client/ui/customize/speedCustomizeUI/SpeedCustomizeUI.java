@@ -68,6 +68,15 @@ public class SpeedCustomizeUI {
         comboBox.setBounds(300, 300, 70, 30);
         panel.add(comboBox);
 
+        JLabel timeLabel = new JLabel("제한 시간을 입력하세요(초)");
+        timeLabel.setBounds(100, 400, 250, 30);
+        timeLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 15));
+        panel.add(timeLabel);
+
+        JTextField timeField = new JTextField();
+        timeField.setBounds(300, 400, 300, 30);
+        panel.add(timeField);
+
         // 확인 버튼
         JButton checkButton = new JButton("확인");
         checkButton.setBounds(660, 470, 80, 30);
@@ -86,6 +95,7 @@ public class SpeedCustomizeUI {
         checkButton.addActionListener(e -> {
             String title = titleField.getText(); // 제목 입력값
             String selectedValue = (String) comboBox.getSelectedItem();
+            String timeLimit = timeField.getText();
 
             if (title.isEmpty()) {
                 JOptionPane.showMessageDialog(frame, "퀴즈 제목을 입력해주세요!");
@@ -94,7 +104,7 @@ public class SpeedCustomizeUI {
 
             sendData = "Speed Mode" + "\n" + title + "\n"; // 제목 포함 데이터 구성
             frame.dispose();
-            new SpeedCustomizeGetQuizUI(socket, out, userId, Integer.parseInt(selectedValue), sendData, receiver);
+            new SpeedCustomizeGetQuizUI(socket, out, userId, Integer.parseInt(selectedValue), sendData, receiver,timeLimit);
         });
 
 

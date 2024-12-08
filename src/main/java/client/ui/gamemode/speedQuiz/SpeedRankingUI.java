@@ -18,6 +18,9 @@ public class SpeedRankingUI {
     private final String userId;
     private List<String> ranking;
     private MessageReceiver receiver;
+    private volatile boolean running = true;
+    private Thread messageThread;
+    private JFrame frame;
 
     public SpeedRankingUI(Socket socket, ObjectOutputStream out, int roomId, String userId, List<String> ranking, MessageReceiver receiver) {
         this.socket = socket;
@@ -27,7 +30,7 @@ public class SpeedRankingUI {
         this.ranking = ranking;
         this.receiver = receiver;
 
-        JFrame frame = new JFrame("Speed Ranking");
+        this.frame = new JFrame("Speed Ranking");
         frame.setSize(800, 600);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -65,11 +68,25 @@ public class SpeedRankingUI {
         }
         frame.setVisible(true);
 
+        messageThread = new Thread(this::listenForMessages);
+        messageThread.start();
+
+
         // 뒤로가기 버튼 동작
         backButton.addActionListener(e -> {
-            outRoom(roomId);
-            frame.dispose();
-            new RoomListUI(socket, out, "Speed Quiz Mode", this.userId, receiver);
+//            outRoom(roomId);
+//            frame.dispose();
+//            new RoomListUI(socket, out, "Speed Quiz Mode", this.userId, receiver);
+            try {
+                Message outRequest = new Message("outRoom")
+                        .setUserId(userId)
+                        .setData(String.valueOf(roomId));
+                out.writeObject(outRequest);
+                out.flush();
+
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         });
 
     }
@@ -81,10 +98,37 @@ public class SpeedRankingUI {
                     .setData(String.valueOf(roomId));
             out.writeObject(outRequest);
 
-            Message response = receiver.takeMessage();
-            System.out.println(response);
+//            Message response = receiver.takeMessage();
+//            System.out.println(response);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+    private void listenForMessages() {
+        try {
+            while (running) {
+                Message response = receiver.takeMessage();
+                if ("outRoomSuccess".equals(response.getType())) {
+                    running=false;
+                    SwingUtilities.invokeLater(() -> {
+                        frame.dispose();
+                        new RoomListUI(socket, out, "Speed Quiz Mode", userId, receiver);
+                    });
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void stopThread() {
+        running = false; // 플래그를 false로 설정
+        if (messageThread != null && messageThread.isAlive()) {
+            messageThread.interrupt(); // 스레드 인터럽트
+        }
+    }
 }
+
+

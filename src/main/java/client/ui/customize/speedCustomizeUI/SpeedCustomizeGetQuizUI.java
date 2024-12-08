@@ -20,15 +20,17 @@ public class SpeedCustomizeGetQuizUI {
     private int num;
     private String sendData;
     MessageReceiver receiver;
+    private String timeLimit;
 
 
-    public SpeedCustomizeGetQuizUI(Socket socket, ObjectOutputStream out, String userId, int num, String sendData, MessageReceiver receiver) {
+    public SpeedCustomizeGetQuizUI(Socket socket, ObjectOutputStream out, String userId, int num, String sendData, MessageReceiver receiver, String timeLimit) {
         this.socket = socket;
         this.out = out;
         this.userId = userId;
         this.num = num;
         this.sendData = sendData;
         this.receiver = receiver;
+        this.timeLimit = timeLimit;
 
         JFrame frame = new JFrame("Speed Customize");
         frame.setSize(800, 600);
@@ -92,15 +94,15 @@ public class SpeedCustomizeGetQuizUI {
         aField.setBounds(300, 270, 300, 30);
         panel.add(aField);
 
-        // 시간 제한
-        JLabel timeLabel = new JLabel("제한 시간을 입력하세요(초)");
-        timeLabel.setBounds(100, 340, 250, 30);
-        timeLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 15));
-        panel.add(timeLabel);
-
-        JTextField timeField = new JTextField();
-        timeField.setBounds(300, 340, 300, 30);
-        panel.add(timeField);
+//        // 시간 제한
+//        JLabel timeLabel = new JLabel("제한 시간을 입력하세요(초)");
+//        timeLabel.setBounds(100, 340, 250, 30);
+//        timeLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 15));
+//        panel.add(timeLabel);
+//
+//        JTextField timeField = new JTextField();
+//        timeField.setBounds(300, 340, 300, 30);
+//        panel.add(timeField);
 
         // 확인 버튼
         JButton checkButton = new JButton("확인");
@@ -115,7 +117,7 @@ public class SpeedCustomizeGetQuizUI {
 
         checkButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                sendData += timeField.getText()+"\t";
+                sendData += timeLimit+"\t";
                 sendData += qField.getText()+"\t";
                 sendData += aField.getText()+"\n";
 
