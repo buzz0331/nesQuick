@@ -22,7 +22,7 @@ public class CooperationStartUI {
     private final String userId;
     private final int userNumber;
     private final List<Quiz> quizList;
-    private final MessageReceiver receiver;
+    private MessageReceiver receiver;
 
     private int currentIndex = 0;
     private Timer currentTimer; // 현재 실행 중인 타이머를 추적하기 위한 필드
@@ -35,6 +35,10 @@ public class CooperationStartUI {
     private JTextArea chatArea;
     private JTextField chatField;
     private JButton sendChatButton;
+
+    private Thread messageThread;
+    private volatile boolean running = true;
+
 
     public CooperationStartUI(Socket socket, ObjectOutputStream out, int roomId, String userId, int userNumber,
                               List<Quiz> quizList, MessageReceiver receiver) {
@@ -70,6 +74,17 @@ public class CooperationStartUI {
 
         displayQuiz(panel, frame, logoLabel, backButton, currentIndex);
 
+        backButton.addActionListener(e -> {
+//            outRoom(roomId);
+            if (currentTimer != null) {
+                currentTimer.stop(); // 기존 타이머 중지
+            }
+            stopThread();
+            frame.dispose();
+            new RoomListUI(socket, out, "Cooperation Mode", this.userId, receiver);
+        });
+
+
         // 채팅 UI
         chatArea = new JTextArea();
         chatArea.setEditable(false);
@@ -88,13 +103,7 @@ public class CooperationStartUI {
         panel.add(sendChatButton);
 
         frame.setVisible(true);
-        listenForMessages();
-
-        // 뒤로가기 버튼 동작
-        backButton.addActionListener(e -> {
-            frame.dispose();
-            new RoomListUI(socket, out, "Cooperation Mode", userId, receiver);
-        });
+//        listenForMessages();
 
         // 채팅 전송 버튼 동작
         sendChatButton.addActionListener(e -> {
@@ -107,6 +116,9 @@ public class CooperationStartUI {
                 chatArea.append(userId + ": " + message + "\n");
             }
         });
+
+        messageThread = new Thread(this::listenForMessages);
+        messageThread.start();
     }
 
     private void displayQuiz(JPanel panel, JFrame frame, JLabel logoLabel, JButton backButton, int index) {
@@ -160,19 +172,42 @@ public class CooperationStartUI {
             panel.setComponentZOrder(maskPanelLeft, 0); // 최상단으로 배치
         }
 
-        JLabel ansLabel = new JLabel("정답: ");
-        ansLabel.setBounds(50, 520, 60, 30);
-        ansLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 15));
-        panel.add(ansLabel);
+        // 정답 입력 UI (userNumber == 0일 때만 표시)
+        if (userNumber == 0) {
+            JLabel ansLabel = new JLabel("정답: ");
+            ansLabel.setBounds(50, 520, 60, 30);
+            ansLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 15));
+            panel.add(ansLabel);
 
-        JTextField ansField = new JTextField();
-        ansField.setBounds(110, 520, 400, 30);
-        panel.add(ansField);
+            JTextField ansField = new JTextField();
+            ansField.setBounds(110, 520, 400, 30);
+            panel.add(ansField);
 
-        JButton sendButton = new JButton("확인");
-        sendButton.setBounds(520, 520, 80, 30);
-        sendButton.setFont(new Font("Malgun Gothic", Font.PLAIN, 15));
-        panel.add(sendButton);
+            JButton sendButton = new JButton("확인");
+            sendButton.setBounds(520, 520, 80, 30);
+            sendButton.setFont(new Font("Malgun Gothic", Font.PLAIN, 15));
+            panel.add(sendButton);
+
+            sendButton.addActionListener(e -> {
+                String userAnswer = ansField.getText();
+                if (userAnswer.equals(currentQuiz.getAnswer())) {
+                    currentTimer.stop();
+                    JOptionPane.showMessageDialog(frame, "정답입니다!");
+                    try {
+                        Message nextQuizMessage = new Message("nextCooperationQuiz")
+                                .setRoomId(roomId)
+                                .setUserId(userId)
+                                .setData(String.valueOf(currentIndex + 1));
+                        out.writeObject(nextQuizMessage);
+                        out.flush();
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(frame, "오답입니다.");
+                }
+            });
+        }
 
         JLabel timerLabel = new JLabel("남은 시간: " + timeLimit + "초");
         timerLabel.setBounds(300, 560, 200, 30);
@@ -186,11 +221,15 @@ public class CooperationStartUI {
         currentTimer = new Timer(1000, null);
         final int[] timeRemaining = {timeLimit};
 
-        sendButton.addActionListener(e -> {
-            currentTimer.stop();
-            String userAnswer = ansField.getText();
-            if (userAnswer.equals(currentQuiz.getAnswer())) {
-                JOptionPane.showMessageDialog(frame, "정답입니다!");
+        currentTimer.addActionListener(e -> {
+            timeRemaining[0]--;
+            timerLabel.setText("남은 시간: " + timeRemaining[0] + "초");
+
+            if (timeRemaining[0] <= 0)
+            {
+                currentTimer.stop();
+                if(userNumber == 0){
+                JOptionPane.showMessageDialog(frame, "시간 초과! 오답 처리됩니다.\n정답 : " + currentQuiz.getAnswer());
                 try {
                     Message nextQuizMessage = new Message("nextCooperationQuiz")
                             .setRoomId(roomId)
@@ -201,31 +240,17 @@ public class CooperationStartUI {
                 } catch (IOException ex) {
                     ex.printStackTrace();
                 }
-            } else {
-                JOptionPane.showMessageDialog(frame, "오답입니다.");
             }
-        });
-
-        currentTimer.addActionListener(e -> {
-            timeRemaining[0]--;
-            timerLabel.setText("남은 시간: " + timeRemaining[0] + "초");
-
-            if (timeRemaining[0] <= 0) {
-                currentTimer.stop();
-                JOptionPane.showMessageDialog(frame, "시간 초과! 오답 처리됩니다.");
-                currentIndex++;
-                if (currentIndex < quizList.size()) {
-                    displayQuiz(panel, frame, logoLabel, backButton, currentIndex);
-                } else {
-                    JOptionPane.showMessageDialog(frame, "퀴즈가 종료되었습니다!");
-                    frame.dispose();
-                    new RoomListUI(socket, out, "Cooperation Mode", userId, receiver);
+                else {
+                    JOptionPane.showMessageDialog(frame, "시간 초과! 오답 처리됩니다.\n정답 : " + currentQuiz.getAnswer());
                 }
+
             }
         });
 
         currentTimer.start();
     }
+
 
     private void sendMessage(String messageContent) {
         try {
@@ -241,9 +266,8 @@ public class CooperationStartUI {
     }
 
     private void listenForMessages() {
-        Thread messageThread = new Thread(() -> {
             try {
-                while (true) {
+                while (running) {
                     Message message = receiver.takeMessage();
                     if ("chat".equals(message.getType()) && message.getRoomId() == roomId) {
                         chatArea.append(message.getUserId() + ": " + message.getData() + "\n");
@@ -256,15 +280,41 @@ public class CooperationStartUI {
                             });
                         } else {
                             JOptionPane.showMessageDialog(frame, "퀴즈가 종료되었습니다!");
+                            outRoom(roomId);
+                            if (currentTimer != null) {
+                                currentTimer.stop(); // 기존 타이머 중지
+                            }
+                            stopThread();
                             frame.dispose();
-                            new RoomListUI(socket, out, "Cooperation Mode", userId, receiver);
+                            new RoomListUI(socket, out, "Cooperation Mode", this.userId, receiver);
+
+
                         }
                     }
                 }
             } catch (Exception e) {
                 e.printStackTrace();
             }
-        });
-        messageThread.start();
+    }
+
+    private void outRoom(int roomId) {
+        try {
+            Message outRequest = new Message("outRoom")
+                    .setUserId(userId)
+                    .setData(String.valueOf(roomId));
+            out.writeObject(outRequest);
+
+            Message response = receiver.takeMessage();
+            System.out.println(response);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void stopThread() {
+        running = false; // 플래그를 false로 설정
+        if (messageThread != null && messageThread.isAlive()) {
+            messageThread.interrupt(); // 스레드 인터럽트
+        }
     }
 }
