@@ -47,7 +47,7 @@ public class RoomAddUI {
         // 게임 모드 라벨
         JLabel modeLabel = new JLabel("게임 모드: " + gameMode);
         modeLabel.setBounds(175, 160, 200, 30);
-        modeLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        modeLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 14));
         panel.add(modeLabel);
 
         // 방 이름 입력
@@ -60,14 +60,17 @@ public class RoomAddUI {
         panel.add(nameText);
 
         // 인원 제한 입력
+
         JLabel capacityLabel = new JLabel("인원 제한:");
         capacityLabel.setBounds(150, 240, 80, 25);
-        panel.add(capacityLabel);
-
+        if(!gameMode.equals("Cooperation Mode")) {
+            panel.add(capacityLabel);
+        }
         JTextField capacityText = new JTextField(20);
         capacityText.setBounds(230, 240, 150, 25);
-        panel.add(capacityText);
-
+        if(!gameMode.equals("Cooperation Mode")) {
+            panel.add(capacityText);
+        }
         // 방 생성 버튼
         JButton createButton = new JButton("방 생성");
         createButton.setBounds(195, 280, 100, 30);
@@ -88,6 +91,8 @@ public class RoomAddUI {
         createButton.addActionListener(e -> {
             String roomName = nameText.getText();
             String capacityStr = capacityText.getText();
+            if(gameMode.equals("Cooperation Mode"))
+                capacityStr = "2";
 
             try {
                 int capacity = Integer.parseInt(capacityStr);
@@ -97,7 +102,6 @@ public class RoomAddUI {
                         .setRoomName(roomName)
                         .setCapacity(capacity);  // 인원 제한 전송
                 out.writeObject(createRoomMessage);
-
                 Message response = receiver.takeMessage();
                 if ("createRoomSuccess".equals(response.getType())) {
                     JOptionPane.showMessageDialog(null, "방 생성 성공!");
