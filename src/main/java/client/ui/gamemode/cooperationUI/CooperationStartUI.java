@@ -26,6 +26,7 @@ public class CooperationStartUI {
 
     private int currentIndex = 0;
     private Timer currentTimer; // 현재 실행 중인 타이머를 추적하기 위한 필드
+    private int nextQuizCase = 1;
 
     private JPanel panel;
     private JFrame frame;
@@ -191,18 +192,21 @@ public class CooperationStartUI {
             sendButton.addActionListener(e -> {
                 String userAnswer = ansField.getText();
                 if (userAnswer.equals(currentQuiz.getAnswer())) {
-                    currentTimer.stop();
-                    try {
-                        Message nextQuizMessage = new Message("nextCooperationQuiz")
-                                .setRoomId(roomId)
-                                .setUserId(userId)
-                                .setData(String.valueOf(currentIndex + 1));
-                        out.writeObject(nextQuizMessage);
-                        out.flush();
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
+                    if (userNumber == 0) {
+                        currentTimer.stop();
+                        try {
+                            Message nextQuizMessage = new Message("nextCooperationQuiz")
+                                    .setRoomId(roomId)
+                                    .setUserId(userId)
+                                    .setData(String.valueOf(currentIndex + 1));
+                            out.writeObject(nextQuizMessage);
+                            out.flush();
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
                     }
-                } else {
+                }
+                else {
                     JOptionPane.showMessageDialog(frame, "오답입니다.");
                 }
             });
@@ -224,11 +228,13 @@ public class CooperationStartUI {
             timeRemaining[0]--;
             timerLabel.setText("남은 시간: " + timeRemaining[0] + "초");
 
+            if(timeRemaining[0] <= 1){
+                nextQuizCase = 2;
+            }
             if (timeRemaining[0] <= 0)
             {
                 currentTimer.stop();
                 if(userNumber == 0){
-                    showTimedMessageDialog(frame, "시간 초과! 오답 처리됩니다.\n정답 : " + currentQuiz.getAnswer(),5000);
                 try {
                     Message nextQuizMessage = new Message("nextCooperationQuiz")
                             .setRoomId(roomId)
@@ -240,10 +246,6 @@ public class CooperationStartUI {
                     ex.printStackTrace();
                 }
             }
-                else {
-                    showTimedMessageDialog(frame, "시간 초과! 오답 처리됩니다.\n정답 : " + currentQuiz.getAnswer(),5000);
-                }
-
             }
         });
 
@@ -272,7 +274,13 @@ public class CooperationStartUI {
                         chatArea.append(message.getUserId() + ": " + message.getData() + "\n");
                     } else if ("toNextCooperationQuiz".equals(message.getType()) && message.getRoomId() == roomId) {
                         currentTimer.stop();
-                        showTimedMessageDialog(frame,"정답입니다. 다음 문제로 넘어갑니다",5000);
+                        if(nextQuizCase == 1){
+                            showTimedMessageDialog(frame, "정답입니다.", 2000);
+                        }else if(nextQuizCase == 2){
+                            showTimedMessageDialog(frame, "시간이 초과되었습니다.", 2000);
+                        }
+                        showTimedMessageDialog(frame, "다음 문제로 넘어갑니다", 2000);
+                        nextQuizCase = 1;
                         int nextIndex = Integer.parseInt(message.getData());
                         if (nextIndex < quizList.size()) {
                             SwingUtilities.invokeLater(() -> {
@@ -280,7 +288,7 @@ public class CooperationStartUI {
                                 displayQuiz(panel, frame, logoLabel, backButton, currentIndex);
                             });
                         } else {
-                            showTimedMessageDialog(frame,"퀴즈가 종료되었습니다",5000);
+                            showTimedMessageDialog(frame,"퀴즈가 종료되었습니다",2000);
                             outRoom(roomId);
                             if (currentTimer != null) {
                                 currentTimer.stop(); // 기존 타이머 중지
@@ -288,8 +296,6 @@ public class CooperationStartUI {
                             stopThread();
                             frame.dispose();
                             new RoomListUI(socket, out, "Cooperation Mode", this.userId, receiver);
-
-
                         }
                     }
                 }
