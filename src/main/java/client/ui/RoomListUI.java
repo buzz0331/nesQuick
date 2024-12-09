@@ -55,7 +55,7 @@ public class RoomListUI {
         // 방 리스트 라벨
         JLabel titleLabel = new JLabel("방 리스트 - " + gameMode);
         titleLabel.setBounds(200, 50, 200, 30);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 18));
+        titleLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 18));
         panel.add(titleLabel);
 
         // 서버로부터 방 리스트 가져오기
@@ -162,6 +162,7 @@ public class RoomListUI {
 
             // MessageReceiver에서 메시지를 가져옴
             Message response = receiver.takeMessage();
+
 
             if ("fetchRoomListResponse".equals(response.getType())) {
                 roomMap = response.getRoomNames();
