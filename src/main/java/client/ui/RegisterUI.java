@@ -64,7 +64,7 @@ public class RegisterUI {
         registerButton.setBackground(new Color(255, 223, 85));
         registerButton.setForeground(Color.BLACK);
         registerButton.setFocusPainted(false);
-        registerButton.setFont(new Font("Arial", Font.BOLD, 15));
+        registerButton.setFont(new Font("Malgun Gothic", Font.BOLD, 15));
         panel.add(registerButton);
 
         frame.setVisible(true);

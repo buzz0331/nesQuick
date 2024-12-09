@@ -37,7 +37,7 @@ public class MenuUI {
 
         JLabel menuLabel = new JLabel("Choose Menu");
         menuLabel.setBounds(175, 150, 200, 30);
-        menuLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        menuLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 16));
         panel.add(menuLabel);
 
         // 게임 실행 버튼
@@ -46,7 +46,7 @@ public class MenuUI {
         playGameButton.setBackground(new Color(255, 223, 85));
         playGameButton.setForeground(Color.BLACK);
         playGameButton.setFocusPainted(false);
-        playGameButton.setFont(new Font("Arial", Font.BOLD, 15));
+        playGameButton.setFont(new Font("Malgun Gothic", Font.BOLD, 15));
         panel.add(playGameButton);
 
         // 게임 커스터마이징 버튼
@@ -55,7 +55,7 @@ public class MenuUI {
         customizeGameButton.setBackground(new Color(255, 223, 85));
         customizeGameButton.setForeground(Color.BLACK);
         customizeGameButton.setFocusPainted(false);
-        customizeGameButton.setFont(new Font("Arial", Font.BOLD, 15));
+        customizeGameButton.setFont(new Font("Malgun Gothic", Font.BOLD, 15));
         panel.add(customizeGameButton);
 
         // 로그아웃 버튼
@@ -64,7 +64,7 @@ public class MenuUI {
         logoutButton.setBackground(new Color(255, 223, 85));
         logoutButton.setForeground(Color.BLACK);
         logoutButton.setFocusPainted(false);
-        logoutButton.setFont(new Font("Arial", Font.BOLD, 15));
+        logoutButton.setFont(new Font("Malgun Gothic", Font.BOLD, 15));
         panel.add(logoutButton);
 
         frame.setVisible(true);
