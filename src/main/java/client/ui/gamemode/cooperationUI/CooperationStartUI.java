@@ -139,7 +139,7 @@ public class CooperationStartUI {
         int timeLimit = currentQuiz.getTime();
 
         // 문제 이미지 로드
-        String questionImagePath = "./pics/" + currentQuiz.getQuestion();
+        String questionImagePath = "./src/main/java/client/pics/" + currentQuiz.getQuestion();
         java.io.File imageFile = new java.io.File(questionImagePath);
         if (!imageFile.exists()) {
             JOptionPane.showMessageDialog(frame, "이미지를 찾을 수 없습니다: " + questionImagePath, "오류",
@@ -192,7 +192,6 @@ public class CooperationStartUI {
                 String userAnswer = ansField.getText();
                 if (userAnswer.equals(currentQuiz.getAnswer())) {
                     currentTimer.stop();
-                    JOptionPane.showMessageDialog(frame, "정답입니다!");
                     try {
                         Message nextQuizMessage = new Message("nextCooperationQuiz")
                                 .setRoomId(roomId)
@@ -229,7 +228,7 @@ public class CooperationStartUI {
             {
                 currentTimer.stop();
                 if(userNumber == 0){
-                JOptionPane.showMessageDialog(frame, "시간 초과! 오답 처리됩니다.\n정답 : " + currentQuiz.getAnswer());
+                    showTimedMessageDialog(frame, "시간 초과! 오답 처리됩니다.\n정답 : " + currentQuiz.getAnswer(),5000);
                 try {
                     Message nextQuizMessage = new Message("nextCooperationQuiz")
                             .setRoomId(roomId)
@@ -242,7 +241,7 @@ public class CooperationStartUI {
                 }
             }
                 else {
-                    JOptionPane.showMessageDialog(frame, "시간 초과! 오답 처리됩니다.\n정답 : " + currentQuiz.getAnswer());
+                    showTimedMessageDialog(frame, "시간 초과! 오답 처리됩니다.\n정답 : " + currentQuiz.getAnswer(),5000);
                 }
 
             }
@@ -272,6 +271,8 @@ public class CooperationStartUI {
                     if ("chat".equals(message.getType()) && message.getRoomId() == roomId) {
                         chatArea.append(message.getUserId() + ": " + message.getData() + "\n");
                     } else if ("toNextCooperationQuiz".equals(message.getType()) && message.getRoomId() == roomId) {
+                        currentTimer.stop();
+                        showTimedMessageDialog(frame,"정답입니다. 다음 문제로 넘어갑니다",5000);
                         int nextIndex = Integer.parseInt(message.getData());
                         if (nextIndex < quizList.size()) {
                             SwingUtilities.invokeLater(() -> {
@@ -279,7 +280,7 @@ public class CooperationStartUI {
                                 displayQuiz(panel, frame, logoLabel, backButton, currentIndex);
                             });
                         } else {
-                            JOptionPane.showMessageDialog(frame, "퀴즈가 종료되었습니다!");
+                            showTimedMessageDialog(frame,"퀴즈가 종료되었습니다",5000);
                             outRoom(roomId);
                             if (currentTimer != null) {
                                 currentTimer.stop(); // 기존 타이머 중지
@@ -317,4 +318,24 @@ public class CooperationStartUI {
             messageThread.interrupt(); // 스레드 인터럽트
         }
     }
+
+    private void showTimedMessageDialog(JFrame parentFrame, String message, int timeout) {
+        JDialog dialog = new JDialog(parentFrame, "Message", true);
+        dialog.setLayout(new BorderLayout());
+
+        JLabel label = new JLabel(message, SwingConstants.CENTER);
+        label.setFont(new Font("Malgun Gothic", Font.BOLD, 14));
+        dialog.add(label, BorderLayout.CENTER);
+
+        dialog.setSize(300, 150);
+        dialog.setLocationRelativeTo(parentFrame);
+
+        Timer timer = new Timer(timeout, e -> dialog.dispose());
+        timer.setRepeats(false);
+        timer.start();
+
+        dialog.setVisible(true);
+    }
 }
+
+

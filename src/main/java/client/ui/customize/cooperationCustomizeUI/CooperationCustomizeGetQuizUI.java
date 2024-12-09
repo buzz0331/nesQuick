@@ -128,7 +128,7 @@ private void displayGetQuiz(JPanel panel, JFrame frame, JLabel logoLabel, JButto
 uploadButton.addActionListener(new ActionListener() {
     @Override
     public void actionPerformed(ActionEvent e) {
-        JFileChooser fileChooser = new JFileChooser("./pics"); // 기본 경로를 pics 폴더로 설정
+        JFileChooser fileChooser = new JFileChooser("./src/main/java/client/pics"); // 기본 경로를 pics 폴더로 설정
         fileChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
 
         // 파일 필터 추가
@@ -154,7 +154,7 @@ uploadButton.addActionListener(new ActionListener() {
             try {
                 // 선택된 파일의 절대 경로 및 pics 폴더의 절대 경로 가져오기
                 java.nio.file.Path selectedPath = selectedFile.toPath().toRealPath();
-                java.nio.file.Path picsPath = new java.io.File("./pics").toPath().toRealPath();
+                java.nio.file.Path picsPath = new java.io.File("./src/main/java/client/pics").toPath().toRealPath();
 
                 // pics 내부 파일인지 확인
                 if (selectedPath.startsWith(picsPath)) {
