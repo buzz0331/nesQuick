@@ -39,7 +39,7 @@ public class GameCustomizeUI {
 
         JLabel customizeLabel = new JLabel("게임 모드를 커스터마이징하세요");
         customizeLabel.setBounds(150, 150, 250, 30);
-        customizeLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        customizeLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 16));
         panel.add(customizeLabel);
 
         // 스피드 퀴즈 모드 커스터마이징 버튼
@@ -48,7 +48,7 @@ public class GameCustomizeUI {
         speedQuizButton.setBackground(new Color(255, 223, 85));
         speedQuizButton.setForeground(Color.BLACK);
         speedQuizButton.setFocusPainted(false);
-        speedQuizButton.setFont(new Font("Arial", Font.BOLD, 15));
+        speedQuizButton.setFont(new Font("Malgun Gothic", Font.BOLD, 15));
         panel.add(speedQuizButton);
 
         // 협동 모드 커스터마이징 버튼
@@ -57,7 +57,7 @@ public class GameCustomizeUI {
         cooperationModeButton.setBackground(new Color(255, 223, 85));
         cooperationModeButton.setForeground(Color.BLACK);
         cooperationModeButton.setFocusPainted(false);
-        cooperationModeButton.setFont(new Font("Arial", Font.BOLD, 15));
+        cooperationModeButton.setFont(new Font("Malgun Gothic", Font.BOLD, 15));
         panel.add(cooperationModeButton);
 
         // 대전 모드 커스터마이징 버튼
@@ -66,7 +66,7 @@ public class GameCustomizeUI {
         versusModeButton.setBackground(new Color(255, 223, 85));
         versusModeButton.setForeground(Color.BLACK);
         versusModeButton.setFocusPainted(false);
-        versusModeButton.setFont(new Font("Arial", Font.BOLD, 15));
+        versusModeButton.setFont(new Font("Malgun Gothic", Font.BOLD, 15));
         panel.add(versusModeButton);
 
         frame.setVisible(true);

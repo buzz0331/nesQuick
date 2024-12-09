@@ -36,7 +36,7 @@ public class GameModeUI {
 
         JLabel modeLabel = new JLabel("Choose Game Mode");
         modeLabel.setBounds(175, 150, 200, 30);
-        modeLabel.setFont(new Font("Arial", Font.BOLD, 16));
+        modeLabel.setFont(new Font("Malgun Gothic", Font.BOLD, 16));
         panel.add(modeLabel);
 
         JButton speedQuizButton = new JButton("Speed Quiz Mode");
@@ -44,7 +44,7 @@ public class GameModeUI {
         speedQuizButton.setBackground(new Color(255, 223, 85));
         speedQuizButton.setForeground(Color.BLACK);
         speedQuizButton.setFocusPainted(false);
-        speedQuizButton.setFont(new Font("Arial", Font.BOLD, 15));
+        speedQuizButton.setFont(new Font("Malgun Gothic", Font.BOLD, 15));
         panel.add(speedQuizButton);
 
         JButton cooperationModeButton = new JButton("Cooperation Mode");
@@ -52,7 +52,7 @@ public class GameModeUI {
         cooperationModeButton.setBackground(new Color(255, 223, 85));
         cooperationModeButton.setForeground(Color.BLACK);
         cooperationModeButton.setFocusPainted(false);
-        cooperationModeButton.setFont(new Font("Arial", Font.BOLD, 15));
+        cooperationModeButton.setFont(new Font("Malgun Gothic", Font.BOLD, 15));
         panel.add(cooperationModeButton);
 
         JButton versusModeButton = new JButton("Battle Mode");
@@ -60,7 +60,7 @@ public class GameModeUI {
         versusModeButton.setBackground(new Color(255, 223, 85));
         versusModeButton.setForeground(Color.BLACK);
         versusModeButton.setFocusPainted(false);
-        versusModeButton.setFont(new Font("Arial", Font.BOLD, 15));
+        versusModeButton.setFont(new Font("Malgun Gothic", Font.BOLD, 15));
         panel.add(versusModeButton);
 
         frame.setVisible(true);

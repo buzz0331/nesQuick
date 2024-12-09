@@ -56,7 +56,7 @@ public class LoginUI {
         loginButton.setBackground(new Color(255, 223, 85));
         loginButton.setForeground(Color.BLACK);
         loginButton.setFocusPainted(false);
-        loginButton.setFont(new Font("Arial", Font.BOLD, 15));
+        loginButton.setFont(new Font("Malgun Gothic", Font.BOLD, 15));
         panel.add(loginButton);
 
         frame.setVisible(true);
