@@ -80,6 +80,8 @@ javac QuizClient.java
 java QuizClient
 ```
 
+---
+
 ## 👨‍💻 팀원 소개
 
 | 이름 | 역할 | GitHub ID |
