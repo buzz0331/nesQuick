@@ -86,7 +86,7 @@ java QuizClient
 
 | 이름 | 역할 | GitHub ID |
 |------|------|-----------|
-| 장현준 | 서버 설계 및 네트워크 개발 | [<img src="https://avatars.githubusercontent.com/buzz0331" width="130" height="130">](https://github.com/buzz0331) |
-| 조용찬 | 클라이언트 UI 개발 및 게임 로직 구현 | [<img src="https://avatars.githubusercontent.com/YongChanCho" width="130" height="130">](https://github.com/YongChanCho) |
-| 최현우 | 퀴즈 시스템 및 데이터베이스 관리 | [<img src="https://avatars.githubusercontent.com/wohyunchoi" width="130" height="130">](https://github.com/wohyunchoi) |
-| 임지예 | 채팅 및 방 관리 기능 개발 | [<img src="https://avatars.githubusercontent.com/ljyljy020202" width="130" height="130">](https://github.com/ljyljy020202) |
+| 장현준 | 서버 설계 및 실시간 채팅 시스템 구현 | [<img src="https://avatars.githubusercontent.com/buzz0331" width="130" height="130">](https://github.com/buzz0331) |
+| 조용찬 | 스피드퀴즈모드 구현 | [<img src="https://avatars.githubusercontent.com/YongChanCho" width="130" height="130">](https://github.com/YongChanCho) |
+| 최현우 | 협력모드 구현 | [<img src="https://avatars.githubusercontent.com/wohyunchoi" width="130" height="130">](https://github.com/wohyunchoi) |
+| 임지예 | 대전모드 구현 | [<img src="https://avatars.githubusercontent.com/ljyljy020202" width="130" height="130">](https://github.com/ljyljy020202) |
